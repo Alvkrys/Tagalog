@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TalaLog — Vocabulario Tagalog</title>
+  <style>
+    :root{--m:#666;--bd:#ddd}
+    body{font-family:system-ui,arial;margin:24px;max-width:980px}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    input,button,textarea,select{padding:8px;margin:4px 0}
+    input,textarea,select{border:1px solid var(--bd);border-radius:6px}
+    button{border:1px solid var(--bd);border-radius:6px;cursor:pointer}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .card{border:1px solid var(--bd);padding:12px;border-radius:8px;margin:8px 0}
+    .muted{color:var(--m)}
+    .right{margin-left:auto}
+    .hidden{display:none}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📝 TalaLog</h1>
+    <div id="userBox" class="hidden">
+      <span id="userEmail" class="muted"></span>
+      <button id="signOutBtn">Salir</button>
+    </div>
+  </header>
+
+  <!-- Auth -->
+  <section id="authSection">
+    <h3>Entrá con tu correo (OTP)</h3>
+    <div class="row">
+      <input id="email" type="email" placeholder="tu@correo.com" />
+      <button id="sendOtpBtn">Enviar código</button>
+    </div>
+    <div id="otpBox" class="row hidden">
+      <input id="otp" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" />
+      <button id="verifyOtpBtn">Verificar</button>
+    </div>
+    <p class="muted">Revisá tu inbox/spam. El código caduca pronto.</p>
+  </section>
+
+  <!-- App -->
+  <section id="appSection" class="hidden">
+    <h3>Agregar palabra</h3>
+    <div class="grid">
+      <input id="term" placeholder="Palabra en Tagalog *" />
+      <input id="meaning" placeholder="Significado (ES/EN)" />
+      <input id="example" placeholder="Ejemplo de uso" />
+      <input id="tags" placeholder="Etiquetas: saludo,verbo (coma separadas)" />
+    </div>
+    <div class="row">
+      <input id="notes" style="flex:1" placeholder="Notas" />
+      <select id="lang_from"><option>Tagalog</option><option>Filipino</option><option>Inglés</option></select>
+      <select id="lang_to"><option>Spanish</option><option>Inglés</option><option>Tagalog</option></select>
+      <button id="addBtn">Agregar</button>
+      <button id="exportBtn">Exportar CSV</button>
+    </div>
+
+    <div class="row" style="margin-top:12px">
+      <input id="search" placeholder="Buscar..." style="flex:1" />
+      <select id="sort">
+        <option value="created_at.desc">Recientes primero</option>
+        <option value="term.asc">A–Z</option>
+        <option value="term.desc">Z–A</option>
+        <option value="updated_at.desc">Editadas reciente</option>
+      </select>
+      <span class="right muted" id="countLabel"></span>
+    </div>
+
+    <div id="list"></div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+  // ===== Config: pega tus claves aquí =====
+  const SUPABASE_URL = "https://supabase.com/dashboard/project/wszrttutzsmzayzpbnjq";
+  const SUPABASE_ANON_KEY = "https://wszrttutzsmzayzpbnjq.supabase.co";
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ===== Helpers de UI =====
+  const qs = s => document.querySelector(s);
+  const authSection = qs('#authSection');
+  const appSection  = qs('#appSection');
+  const userBox     = qs('#userBox');
+  const userEmailEl = qs('#userEmail');
+  const listEl      = qs('#list');
+  const countLabel  = qs('#countLabel');
+
+  // ===== Auth =====
+  qs('#sendOtpBtn').onclick = async () => {
+    const email = qs('#email').value.trim();
+    if (!email) return alert('Poné tu correo');
+    const { error } = await client.auth.signInWithOtp({ email, options: { shouldCreateUser: true }});
+    if (error) return alert(error.message);
+    qs('#otpBox').classList.remove('hidden');
+    alert('Código enviado. Revisá tu correo.');
+  };
+
+  qs('#verifyOtpBtn').onclick = async () => {
+    const email = qs('#email').value.trim();
+    const token = qs('#otp').value.trim();
+    if (!token) return alert('Poné el código OTP');
+    const { error } = await client.auth.verifyOtp({ email, token, type: 'email' });
+    if (error) return alert(error.message);
+    await refreshAuthUI();
+  };
+
+  qs('#signOutBtn').onclick = async () => {
+    await client.auth.signOut();
+    await refreshAuthUI();
+  };
+
+  client.auth.onAuthStateChange(() => refreshAuthUI());
+  refreshAuthUI();
+
+  async function refreshAuthUI(){
+    const { data: { session } } = await client.auth.getSession();
+    if (session?.user) {
+      userEmailEl.textContent = session.user.email || 'Usuario';
+      authSection.classList.add('hidden');
+      userBox.classList.remove('hidden');
+      appSection.classList.remove('hidden');
+      await loadWords();
+    } else {
+      authSection.classList.remove('hidden');
+      userBox.classList.add('hidden');
+      appSection.classList.add('hidden');
+    }
+  }
+
+  // ===== CRUD =====
+  qs('#addBtn').onclick = addWord;
+  qs('#search').addEventListener('input', debounce(loadWords, 250));
+  qs('#sort').addEventListener('change', loadWords);
+  qs('#exportBtn').onclick = exportCSV;
+
+  async function addWord(){
+    const term = qs('#term').value.trim();
+    if (!term) return alert('La palabra es obligatoria');
+    const meaning  = qs('#meaning').value.trim();
+    const example  = qs('#example').value.trim();
+    const notes    = qs('#notes').value.trim();
+    const lang_from= qs('#lang_from').value;
+    const lang_to  = qs('#lang_to').value;
+    const tagsArr  = qs('#tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+
+    const { data: { session } } = await client.auth.getSession();
+    if (!session) return alert('Primero inicia sesión');
+
+    const { error } = await client.from('words').insert([{
+      user_id: session.user.id,
+      term, meaning, example, notes, lang_from, lang_to, tags: tagsArr
+    }]);
+    if (error) return alert(error.message);
+
+    ['term','meaning','example','notes','tags'].forEach(id=>qs('#'+id).value='');
+    await loadWords();
+  }
+
+  async function loadWords(){
+    const q = qs('#search').value.trim();
+    const sortVal = qs('#sort').value; // "col.dir"
+    const [col, dir] = sortVal.split('.');
+    const { data: { session } } = await client.auth.getSession();
+    if (!session) return;
+    let query = client.from('words')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order(col, { ascending: dir !== 'desc' })
+      .limit(500);
+
+    if (q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%,example.ilike.%${q}%`);
+
+    const { data, error } = await query;
+    if (error) { alert(error.message); return; }
+    renderList(data || []);
+  }
+
+  function renderList(rows){
+    listEl.innerHTML = '';
+    countLabel.textContent = `${rows.length} palabra(s)`;
+    if (!rows.length){
+      listEl.innerHTML = `<p class="muted">No hay resultados. Agregá tu primera palabra 👇</p>`;
+      return;
+    }
+    for (const r of rows) listEl.appendChild(card(r));
+  }
+
+  function card(r){
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `
+      <div class="grid">
+        <div><label class="muted">Palabra</label><br/><input value="${esc(r.term)}" data-k="term"></div>
+        <div><label class="muted">Significado</label><br/><input value="${esc(r.meaning||'')}" data-k="meaning"></div>
+        <div><label class="muted">Ejemplo</label><br/><input value="${esc(r.example||'')}" data-k="example"></div>
+        <div><label class="muted">Notas</label><br/><input value="${esc(r.notes||'')}" data-k="notes"></div>
+        <div><label class="muted">De</label><br/><input value="${esc(r.lang_from||'Tagalog')}" data-k="lang_from"></div>
+        <div><label class="muted">A</label><br/><input value="${esc(r.lang_to||'Spanish')}" data-k="lang_to"></div>
+        <div style="grid-column:1/-1"><label class="muted">Etiquetas</label><br/><input value="${esc((r.tags||[]).join(', '))}" data-k="tags"></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <span class="muted">Creado: ${fmtDate(r.created_at)} · Editado: ${fmtDate(r.updated_at)}</span>
+        <span class="right"></span>
+        <button data-action="save">Guardar</button>
+        <button data-action="delete">Eliminar</button>
+      </div>
+    `;
+    el.querySelector('[data-action="save"]').onclick = async () => {
+      const fields = el.querySelectorAll('input[data-k]');
+      const payload = {};
+      fields.forEach(i=>payload[i.getAttribute('data-k')] = i.value.trim());
+      payload.tags = (payload.tags ? payload.tags.split(',').map(t=>t.trim()).filter(Boolean) : []);
+      payload.updated_at = new Date().toISOString();
+      const { error } = await client.from('words').update(payload).eq('id', r.id);
+      if (error) return alert(error.message);
+      await loadWords();
+    };
+    el.querySelector('[data-action="delete"]').onclick = async () => {
+      if (!confirm('¿Eliminar esta palabra?')) return;
+      const { error } = await client.from('words').delete().eq('id', r.id);
+      if (error) return alert(error.message);
+      el.remove();
+    };
+    return el;
+  }
+
+  function exportCSV(){
+    // Toma lo que está en pantalla (filtrado/ordenado)
+    const rows = Array.from(document.querySelectorAll('#list .card')).map(card=>{
+      const get = k => card.querySelector(`input[data-k="${k}"]`)?.value?.trim() || '';
+      return {
+        term: get('term'),
+        meaning: get('meaning'),
+        example: get('example'),
+        notes: get('notes'),
+        lang_from: get('lang_from'),
+        lang_to: get('lang_to'),
+        tags: get('tags'),
+      };
+    });
+    const header = ['term','meaning','example','notes','lang_from','lang_to','tags'];
+    const csv = [header.join(',')].concat(
+      rows.map(r => header.map(h => `"${(r[h]||'').replace(/"/g,'""')}"`).join(','))
+    ).join('\n');
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'talalog.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ===== Utils =====
+  function esc(s){ return (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&gt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+  function fmtDate(s){ if(!s) return '—'; const d=new Date(s); return d.toLocaleString(); }
+  function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+  </script>
+</body>
+</html>
