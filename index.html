@@ -2,262 +2,302 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TalaLog — Vocabulario Tagalog</title>
   <style>
-    :root{--m:#666;--bd:#ddd}
-    body{font-family:system-ui,arial;margin:24px;max-width:980px}
+    :root { --bg:#fafafa; --ink:#171717; --muted:#6b7280; --bd:#e5e7eb; --brand:#4f46e5; }
+    body{font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);margin:24px;max-width:980px}
     header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-    input,button,textarea,select{padding:8px;margin:4px 0}
-    input,textarea,select{border:1px solid var(--bd);border-radius:6px}
-    button{border:1px solid var(--bd);border-radius:6px;cursor:pointer}
+    input,button,textarea,select{padding:10px;border:1px solid var(--bd);border-radius:10px;margin:4px 0}
+    button{border:1px solid var(--bd);border-radius:10px;cursor:pointer;background:#fff}
     .row{display:flex;gap:8px;flex-wrap:wrap}
-    .card{border:1px solid var(--bd);padding:12px;border-radius:8px;margin:8px 0}
-    .muted{color:var(--m)}
+    .card{border:1px solid var(--bd);padding:12px;border-radius:10px;margin:8px 0;background:#fff}
+    .muted{color:var(--muted)}
     .right{margin-left:auto}
     .hidden{display:none}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    @media(max-width:720px){.grid{grid-template-columns:1fr}}
+    @media(max-width:728px){.grid{grid-template-columns:1fr}}
+    .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;margin-right:6px}
+    .list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9}
+    .primary{background:var(--brand);color:#fff;border-color:transparent}
   </style>
 </head>
 <body>
-  <header>
-    <h1>📝 TalaLog</h1>
-    <div id="userBox" class="hidden">
-      <span id="userEmail" class="muted"></span>
-      <button id="signOutBtn">Salir</button>
-    </div>
-  </header>
 
-  <!-- Auth -->
-  <section id="authSection">
-    <h3>Entrá con tu correo (OTP)</h3>
-    <div class="row">
-      <input id="email" type="email" placeholder="tu@correo.com" />
-      <button id="sendOtpBtn">Enviar código</button>
-    </div>
-    <div id="otpBox" class="row hidden">
-      <input id="otp" inputmode="numeric" maxlength="6" placeholder="Código de 6 dígitos" />
-      <button id="verifyOtpBtn">Verificar</button>
-    </div>
-    <p class="muted">Revisá tu inbox/spam. El código caduca pronto.</p>
-  </section>
+<header>
+  <h1>📝 TalaLog</h1>
+  <div id="userBox" class="hidden">
+    <span id="userEmail" class="muted"></span>
+    <button id="signOutBtn">Salir</button>
+  </div>
+</header>
 
-  <!-- App -->
-  <section id="appSection" class="hidden">
+<!-- === Auth (OTP) === -->
+<section id="authSection" class="card">
+  <h3>Entrá con tu correo (OTP)</h3>
+  <div class="row">
+    <input id="email" placeholder="tu@correo.com" style="min-width:260px">
+    <button id="sendOtpBtn">Enviar código</button>
+  </div>
+  <div class="row">
+    <input id="otp" placeholder="Código de 6 dígitos" style="min-width:260px">
+    <button id="verifyBtn">Verificar</button>
+  </div>
+  <p class="muted">Revisá tu inbox/spam. El código caduca pronto.</p>
+</section>
+
+<!-- === App === -->
+<section id="appSection" class="hidden">
+  <div class="card">
     <h3>Agregar palabra</h3>
     <div class="grid">
-      <input id="term" placeholder="Palabra en Tagalog *" />
-      <input id="meaning" placeholder="Significado (ES/EN)" />
-      <input id="example" placeholder="Ejemplo de uso" />
-      <input id="tags" placeholder="Etiquetas: saludo,verbo (coma separadas)" />
+      <input id="term"    placeholder="Palabra en Tagalog *">
+      <input id="meaning" placeholder="Significado (ES/EN)">
+      <input id="example" placeholder="Ejemplo de uso">
+      <input id="tags"    placeholder="Etiquetas: saludo,verbo (coma separadas)">
+    </div>
+    <div class="grid">
+      <input id="notes" placeholder="Notas">
+      <div class="row">
+        <select id="fromLang"><option>Tagalog</option><option>English</option><option>Spanish</option></select>
+        <select id="toLang"><option>Spanish</option><option>English</option></select>
+        <button class="primary" id="addBtn">Agregar</button>
+        <button id="exportBtn">Exportar CSV</button>
+      </div>
     </div>
     <div class="row">
-      <input id="notes" style="flex:1" placeholder="Notas" />
-      <select id="lang_from"><option>Tagalog</option><option>Filipino</option><option>Inglés</option></select>
-      <select id="lang_to"><option>Spanish</option><option>Inglés</option><option>Tagalog</option></select>
-      <button id="addBtn">Agregar</button>
-      <button id="exportBtn">Exportar CSV</button>
-    </div>
-
-    <div class="row" style="margin-top:12px">
-      <input id="search" placeholder="Buscar..." style="flex:1" />
+      <input id="search" placeholder="Buscar..." style="flex:1">
       <select id="sort">
         <option value="created_at.desc">Recientes primero</option>
-        <option value="term.asc">A–Z</option>
-        <option value="term.desc">Z–A</option>
+        <option value="term.asc">A→Z</option>
+        <option value="term.desc">Z→A</option>
         <option value="updated_at.desc">Editadas reciente</option>
       </select>
-      <span class="right muted" id="countLabel"></span>
+      <span class="muted" id="countLabel"></span>
     </div>
+  </div>
 
-    <div id="list"></div>
-  </section>
+  <div id="list" class="card"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-  // ===== Config: pega tus claves aquí =====
+  <div class="row">
+    <button class="primary" id="reviewBtn">Repasar hoy</button>
+    <span id="dueInfo" class="muted"></span>
+  </div>
+
+  <div id="reviewCard" class="card hidden">
+    <div class="muted">Tarjeta <span id="revPos">0</span></div>
+    <h2 id="revTerm" style="margin:8px 0 4px 0"></h2>
+    <div id="revHint" class="muted"></div>
+    <button id="showAnsBtn">Mostrar significado</button>
+    <div id="revAnswer" class="hidden" style="margin-top:8px">
+      <strong id="revMeaning"></strong>
+      <div id="revExample" class="muted" style="margin-top:4px"></div>
+    </div>
+    <div class="row">
+      <button data-q="0">Again</button>
+      <button data-q="3">Good</button>
+      <button data-q="5">Easy</button>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ==== CONFIG: pegá tus claves (o dejá las que ya tenías) ====
   const SUPABASE_URL = "https://wszrttutzsmzayzpbnjq.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // ===== Helpers de UI =====
+  // Helpers
   const qs = s => document.querySelector(s);
   const authSection = qs('#authSection');
   const appSection  = qs('#appSection');
   const userBox     = qs('#userBox');
   const userEmailEl = qs('#userEmail');
   const listEl      = qs('#list');
-  const countLabel  = qs('#countLabel');
+  const countEl     = qs('#countLabel');
 
-  // ===== Auth =====
+  // === Auth (OTP) ===
   qs('#sendOtpBtn').onclick = async () => {
     const email = qs('#email').value.trim();
     if (!email) return alert('Poné tu correo');
-    const { error } = await client.auth.signInWithOtp({ email, options: { shouldCreateUser: true }});
+    const { error } = await client.auth.signInWithOtp({ email }); // passwordless OTP
     if (error) return alert(error.message);
-    qs('#otpBox').classList.remove('hidden');
-    alert('Código enviado. Revisá tu correo.');
+    alert('Código enviado. Revisá tu email.');
   };
-
-  qs('#verifyOtpBtn').onclick = async () => {
+  qs('#verifyBtn').onclick = async () => {
     const email = qs('#email').value.trim();
     const token = qs('#otp').value.trim();
-    if (!token) return alert('Poné el código OTP');
-    const { error } = await client.auth.verifyOtp({ email, token, type: 'email' });
+    if (!email || !token) return alert('Correo y código');
+    const { data, error } = await client.auth.verifyOtp({ email, token, type: 'email' }); // verifica OTP
     if (error) return alert(error.message);
-    await refreshAuthUI();
+    await onAuthed();
   };
+  qs('#signOutBtn').onclick = async () => { await client.auth.signOut(); location.reload(); };
 
-  qs('#signOutBtn').onclick = async () => {
-    await client.auth.signOut();
-    await refreshAuthUI();
-  };
-
-  client.auth.onAuthStateChange(() => refreshAuthUI());
-  refreshAuthUI();
-
-  async function refreshAuthUI(){
-    const { data: { session } } = await client.auth.getSession();
-    if (session?.user) {
-      userEmailEl.textContent = session.user.email || 'Usuario';
-      authSection.classList.add('hidden');
-      userBox.classList.remove('hidden');
-      appSection.classList.remove('hidden');
-      await loadWords();
-    } else {
-      authSection.classList.remove('hidden');
-      userBox.classList.add('hidden');
-      appSection.classList.add('hidden');
-    }
-  }
-
-  // ===== CRUD =====
-  qs('#addBtn').onclick = addWord;
-  qs('#search').addEventListener('input', debounce(loadWords, 250));
-  qs('#sort').addEventListener('change', loadWords);
-  qs('#exportBtn').onclick = exportCSV;
-
-  async function addWord(){
-    const term = qs('#term').value.trim();
-    if (!term) return alert('La palabra es obligatoria');
-    const meaning  = qs('#meaning').value.trim();
-    const example  = qs('#example').value.trim();
-    const notes    = qs('#notes').value.trim();
-    const lang_from= qs('#lang_from').value;
-    const lang_to  = qs('#lang_to').value;
-    const tagsArr  = qs('#tags').value.split(',').map(t=>t.trim()).filter(Boolean);
-
-    const { data: { session } } = await client.auth.getSession();
-    if (!session) return alert('Primero inicia sesión');
-
-    const { error } = await client.from('words').insert([{
-      user_id: session.user.id,
-      term, meaning, example, notes, lang_from, lang_to, tags: tagsArr
-    }]);
-    if (error) return alert(error.message);
-
-    ['term','meaning','example','notes','tags'].forEach(id=>qs('#'+id).value='');
+  async function onAuthed() {
+    const { data: { user } } = await client.auth.getUser();
+    userEmailEl.textContent = user?.email || '';
+    authSection.classList.add('hidden');
+    userBox.classList.remove('hidden');
+    appSection.classList.remove('hidden');
     await loadWords();
   }
 
-  async function loadWords(){
-    const q = qs('#search').value.trim();
-    const sortVal = qs('#sort').value; // "col.dir"
-    const [col, dir] = sortVal.split('.');
+  // === Guardar ===
+  qs('#addBtn').onclick = addWord;
+  async function addWord() {
+    const term     = qs('#term').value.trim();
+    const meaning  = qs('#meaning').value.trim();
+    const example  = qs('#example').value.trim();
+    const notes    = qs('#notes').value.trim();
+    const tagsRaw  = qs('#tags').value.trim();
+    const tags     = tagsRaw ? tagsRaw.split(',').map(s => s.trim()).filter(Boolean) : null;
+    if (!term || !meaning) return alert('Palabra y significado son obligatorios');
+
+    const { data: { session } } = await client.auth.getSession();
+    if (!session) return alert('Iniciá sesión');
+
+    const row = {
+      user_id: session.user.id,
+      term, meaning,
+      example: example || null,
+      notes: notes || null,
+      tags,
+      from_lang: qs('#fromLang').value,
+      to_lang:   qs('#toLang').value,
+      ease: 2.5, repetitions: 0, interval_days: 0,
+      next_review_at: new Date().toISOString()
+    };
+
+    const { error } = await client.from('words').insert(row).select().single();
+    if (error) { console.error(error); return alert('No se pudo guardar: ' + error.message); }
+
+    ['#term','#meaning','#example','#notes','#tags'].forEach(id => qs(id).value = '');
+    await loadWords();
+  }
+
+  // === Listar / Buscar / Ordenar ===
+  qs('#search').oninput = () => loadWords();
+  qs('#sort').onchange  = () => loadWords();
+
+  async function loadWords() {
     const { data: { session } } = await client.auth.getSession();
     if (!session) return;
+    const q = qs('#search').value.trim();
+    const [col, dir] = (qs('#sort').value || 'created_at.desc').split('.');
+
     let query = client.from('words')
       .select('*')
       .eq('user_id', session.user.id)
       .order(col, { ascending: dir !== 'desc' })
       .limit(500);
 
-    if (q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%,example.ilike.%${q}%`);
+    if (q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%`);
 
     const { data, error } = await query;
-    if (error) { alert(error.message); return; }
+    if (error) { console.error(error); return alert(error.message); }
     renderList(data || []);
   }
 
-  function renderList(rows){
+  function renderList(rows) {
+    countEl.textContent = `${rows.length} palabra(s)`;
     listEl.innerHTML = '';
-    countLabel.textContent = `${rows.length} palabra(s)`;
-    if (!rows.length){
-      listEl.innerHTML = `<p class="muted">No hay resultados. Agregá tu primera palabra 👇</p>`;
-      return;
-    }
-    for (const r of rows) listEl.appendChild(card(r));
-  }
+    if (!rows.length) { listEl.innerHTML = '<div class="muted">No hay resultados. Agregá tu primera palabra 🫰</div>'; return; }
 
-  function card(r){
-    const el = document.createElement('div');
-    el.className = 'card';
-    el.innerHTML = `
-      <div class="grid">
-        <div><label class="muted">Palabra</label><br/><input value="${esc(r.term)}" data-k="term"></div>
-        <div><label class="muted">Significado</label><br/><input value="${esc(r.meaning||'')}" data-k="meaning"></div>
-        <div><label class="muted">Ejemplo</label><br/><input value="${esc(r.example||'')}" data-k="example"></div>
-        <div><label class="muted">Notas</label><br/><input value="${esc(r.notes||'')}" data-k="notes"></div>
-        <div><label class="muted">De</label><br/><input value="${esc(r.lang_from||'Tagalog')}" data-k="lang_from"></div>
-        <div><label class="muted">A</label><br/><input value="${esc(r.lang_to||'Spanish')}" data-k="lang_to"></div>
-        <div style="grid-column:1/-1"><label class="muted">Etiquetas</label><br/><input value="${esc((r.tags||[]).join(', '))}" data-k="tags"></div>
-      </div>
-      <div class="row" style="margin-top:8px">
-        <span class="muted">Creado: ${fmtDate(r.created_at)} · Editado: ${fmtDate(r.updated_at)}</span>
-        <span class="right"></span>
-        <button data-action="save">Guardar</button>
-        <button data-action="delete">Eliminar</button>
-      </div>
-    `;
-    el.querySelector('[data-action="save"]').onclick = async () => {
-      const fields = el.querySelectorAll('input[data-k]');
-      const payload = {};
-      fields.forEach(i=>payload[i.getAttribute('data-k')] = i.value.trim());
-      payload.tags = (payload.tags ? payload.tags.split(',').map(t=>t.trim()).filter(Boolean) : []);
-      payload.updated_at = new Date().toISOString();
-      const { error } = await client.from('words').update(payload).eq('id', r.id);
-      if (error) return alert(error.message);
-      await loadWords();
-    };
-    el.querySelector('[data-action="delete"]').onclick = async () => {
-      if (!confirm('¿Eliminar esta palabra?')) return;
-      const { error } = await client.from('words').delete().eq('id', r.id);
-      if (error) return alert(error.message);
-      el.remove();
-    };
-    return el;
-  }
-
-  function exportCSV(){
-    // Toma lo que está en pantalla (filtrado/ordenado)
-    const rows = Array.from(document.querySelectorAll('#list .card')).map(card=>{
-      const get = k => card.querySelector(`input[data-k="${k}"]`)?.value?.trim() || '';
-      return {
-        term: get('term'),
-        meaning: get('meaning'),
-        example: get('example'),
-        notes: get('notes'),
-        lang_from: get('lang_from'),
-        lang_to: get('lang_to'),
-        tags: get('tags'),
-      };
+    rows.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'list-item';
+      div.innerHTML = `
+        <div><strong>${escapeHtml(r.term)}</strong><div class="muted">${escapeHtml(r.example||'')}</div></div>
+        <div>${escapeHtml(r.meaning||'')}<div>${(r.tags||[]).map(t=>`<span class="chip">${escapeHtml(t)}</span>`).join('')}</div></div>
+        <div class="right">
+          <button onclick="delWord('${r.id}')">Eliminar</button>
+        </div>`;
+      listEl.appendChild(div);
     });
-    const header = ['term','meaning','example','notes','lang_from','lang_to','tags'];
-    const csv = [header.join(',')].concat(
-      rows.map(r => header.map(h => `"${(r[h]||'').replace(/"/g,'""')}"`).join(','))
-    ).join('\n');
-    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'talalog.csv'; a.click();
-    URL.revokeObjectURL(url);
+  }
+  window.delWord = async (id) => {
+    const { error } = await client.from('words').delete().eq('id', id);
+    if (error) { console.error(error); return alert(error.message); }
+    await loadWords();
+  };
+
+  // === Exportar CSV ===
+  qs('#exportBtn').onclick = async () => {
+    const { data: { session } } = await client.auth.getSession(); if (!session) return;
+    const { data, error } = await client.from('words').select('*').eq('user_id', session.user.id);
+    if (error) return alert(error.message);
+    const rows = data || [];
+    const csv = ['term,meaning,example,notes,tags,from_lang,to_lang,created_at']
+      .concat(rows.map(r => [
+        r.term, r.meaning, r.example||'', r.notes||'', (r.tags||[]).join('|'), r.from_lang||'', r.to_lang||'', r.created_at
+      ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
+  };
+
+  // === Repaso (SM-2 simplificado) ===
+  let reviewQueue=[], current=null, reviewed=0;
+  qs('#reviewBtn').onclick = startReview;
+  qs('#showAnsBtn').onclick = () => qs('#revAnswer').classList.toggle('hidden');
+  document.querySelectorAll('#reviewCard [data-q]').forEach(b=>b.onclick=()=>gradeCard(+b.dataset.q));
+
+  async function startReview() {
+    const { data: { session } } = await client.auth.getSession(); if (!session) return;
+    const now = new Date().toISOString();
+    const { data, error } = await client.from('words')
+      .select('*').eq('user_id', session.user.id)
+      .lte('next_review_at', now)
+      .order('next_review_at', { ascending:true });
+    if (error) return alert(error.message);
+    reviewQueue = data || []; reviewed = 0;
+    qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
+    nextCard();
+  }
+  function nextCard() {
+    current = reviewQueue.shift();
+    if (!current) { qs('#reviewCard').classList.add('hidden'); alert('¡Repaso listo!'); startReview(); return; }
+    reviewed++; qs('#revPos').textContent = `${reviewed}`;
+    qs('#revTerm').textContent = current.term;
+    qs('#revHint').textContent = (current.from_lang||'Tagalog')+' → '+(current.to_lang||'Spanish');
+    qs('#revMeaning').textContent = current.meaning||'';
+    qs('#revExample').textContent = current.example||'';
+    qs('#revAnswer').classList.add('hidden');
+    qs('#reviewCard').classList.remove('hidden');
+  }
+  function sm2(prevEase=2.5, prevInterval=0, prevReps=0, q=3){
+    let EF = prevEase, reps = prevReps, I = prevInterval;
+    if (q < 3) { reps = 0; I = 1; }
+    else {
+      if (reps === 0) I = 1;
+      else if (reps === 1) I = 6;
+      else I = Math.round(I * EF);
+      reps += 1;
+      EF = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+      if (EF < 1.3) EF = 1.3;
+    }
+    return { EF, I, reps };
+  }
+  async function gradeCard(quality) {
+    if (!current) return;
+    const { EF, I, reps } = sm2(current.ease||2.5, current.interval_days||0, current.repetitions||0, quality);
+    const next = new Date(); next.setDate(next.getDate() + (I||1));
+    const updates = {
+      ease: EF, interval_days: I, repetitions: reps,
+      last_review_at: new Date().toISOString(),
+      next_review_at: next.toISOString()
+    };
+    const { error } = await client.from('words').update(updates).eq('id', current.id);
+    if (error) { console.error(error); return alert('No pude actualizar: '+error.message); }
+    nextCard();
   }
 
-  // ===== Utils =====
-  function esc(s){ return (s||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&gt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
-  function fmtDate(s){ if(!s) return '—'; const d=new Date(s); return d.toLocaleString(); }
-  function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
-  </script>
+  // Utilidades
+  function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
+
+  // === Auto-login si ya hay sesión
+  client.auth.getSession().then(({data:{session}})=>{ if (session) onAuthed(); });
+</script>
 </body>
 </html>
