@@ -1,4 +1,4 @@
- <!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -27,6 +27,8 @@
     header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
     input,button,textarea,select{padding:10px;border:1px solid var(--bd);border-radius:10px;margin:4px 0;background:#fff}
     button{border:1px solid var(--bd);border-radius:10px;cursor:pointer;background:#fff}
+    button.primary{background:var(--brand);color:#fff;border-color:transparent}
+    button.primary:hover{filter:brightness(.97)}
     .row{display:flex;gap:8px;flex-wrap:wrap}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     @media(max-width:728px){.grid{grid-template-columns:1fr}}
@@ -54,9 +56,6 @@
     /* Lista */
     .list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9}
 
-    /* Botón principal */
-    .primary{background:var(--brand);color:#fff;border-color:transparent}
-
     /* Barra de progreso “frescura” */
     .progress{height:6px;background:var(--progress-bg);border-radius:999px;overflow:hidden;margin-top:6px}
     .progress > i{display:block;height:100%;width:var(--pct,0%);background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .4s ease;border-radius:inherit}
@@ -71,106 +70,152 @@
       background:linear-gradient(90deg,var(--brand),var(--brand-2));
       -webkit-background-clip:text;background-clip:text;color:transparent
     }
- /* NUEVO: bandera y crédito */
-.flag{ font-size:28px; margin-right:8px; vertical-align:-2px }
-.credits{
-  text-align:center;
-  color:#d4af37;      /* dorado */
-  font-size:12px;     /* pequeño */
-  margin:28px 0 8px;
-  opacity:.9;
-}
- </style>
+
+    /* NUEVO: bandera, HUD y crédito */
+    .flag{ font-size:28px; margin-right:8px; vertical-align:-2px }
+    .rightbox{display:flex;align-items:center;gap:12px}
+    .hud{display:flex;align-items:center;gap:8px}
+    .pill{background:#fff;border:1px solid var(--bd);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted)}
+
+    .credits{
+      text-align:center;
+      color:#d4af37;      /* dorado */
+      font-size:12px;     /* pequeño */
+      margin:28px 0 8px;
+      opacity:.9;
+    }
+
+    /* Toasts */
+    #toast{ position:fixed; right:20px; bottom:20px; display:flex; flex-direction:column; gap:8px; z-index:9999;}
+    .toast{ background:#fff; border:1px solid var(--bd); border-left:4px solid var(--brand); padding:10px 12px; border-radius:10px;
+            box-shadow:0 10px 24px rgba(16,24,40,.08); color:var(--ink); min-width:220px; transition:.3s ease;
+    }
+    .toast.error{ border-left-color:#ef4444;}
+  </style>
 </head>
 <body>
+  <!-- Toasts -->
+  <div id="toast" aria-live="polite"></div>
 
-<header>
- <h1><span class="flag" aria-label="Bandera de Filipinas">🇵🇭</span> Tagaloog</h1>
+  <header>
+    <h1><span class="flag" aria-label="Bandera de Filipinas">🇵🇭</span> TalaLog</h1>
 
-  <div id="userBox" class="hidden">
-    <span id="userEmail" class="muted"></span>
-    <button id="signOutBtn">Salir</button>
-  </div>
-</header>
+    <div class="rightbox">
+      <div class="hud">
+        <span id="todayGoal" class="pill">Hoy 0/20</span>
+        <span id="duePill" class="pill">Pendientes 0</span>
+        <span id="streakPill" class="pill">🔥 0</span>
+      </div>
 
-<!-- === Auth (OTP) === -->
-<section id="authSection" class="card">
-  <h3>Entrá con tu correo (OTP)</h3>
-  <div class="row">
-    <input id="email" placeholder="tu@correo.com" style="min-width:260px">
-    <button id="sendOtpBtn">Enviar código</button>
-  </div>
-  <div class="row">
-    <input id="otp" placeholder="Código de 6 dígitos" style="min-width:260px">
-    <button id="verifyBtn">Verificar</button>
-  </div>
-  <p class="muted">Revisá tu inbox/spam. El código caduca pronto.</p>
-</section>
-
-<!-- === App === -->
-<section id="appSection" class="hidden">
-  <div class="card">
-    <h3>Agregar palabra</h3>
-    <div class="grid">
-      <input id="term"    placeholder="Palabra en Tagalog *">
-      <input id="meaning" placeholder="Significado (ES/EN)">
-      <input id="example" placeholder="Ejemplo de uso">
-      <input id="tags"    placeholder="Etiquetas: saludo,verbo (coma separadas)">
-    </div>
-    <div class="grid">
-      <input id="notes" placeholder="Notas">
-      <div class="row">
-        <select id="fromLang"><option>Tagalog</option><option>English</option><option>Spanish</option></select>
-        <select id="toLang"><option>Spanish</option><option>English</option></select>
-        <button class="primary" id="addBtn">Agregar</button>
-        <button id="exportBtn">Exportar CSV</button>
+      <div id="userBox" class="hidden">
+        <span id="userEmail" class="muted"></span>
+        <button id="signOutBtn">Salir</button>
       </div>
     </div>
+  </header>
+
+  <!-- === Auth (OTP) === -->
+  <section id="authSection" class="card">
+    <h3>Entrá con tu correo (OTP)</h3>
     <div class="row">
-      <input id="search" placeholder="Buscar..." style="flex:1">
-      <select id="sort">
-        <option value="created_at.desc">Recientes primero</option>
-        <option value="term.asc">A–Z</option>
-        <option value="term.desc">Z–A</option>
-        <option value="updated_at.desc">Editadas reciente</option>
-      </select>
-      <span class="muted" id="countLabel"></span>
-    </div>
-  </div>
-
-  <div id="list" class="card"></div>
-
-  <div class="row">
-    <button class="primary" id="reviewBtn">Repasar hoy</button>
-    <span id="dueInfo" class="muted"></span>
-  </div>
-
-  <div id="reviewCard" class="card hidden">
-    <div class="muted">Tarjeta <span id="revPos">0</span></div>
-    <h2 id="revTerm" style="margin:8px 0 4px 0"></h2>
-    <div id="revHint" class="muted"></div>
-    <button id="showAnsBtn">Mostrar significado</button>
-    <div id="revAnswer" class="hidden" style="margin-top:8px">
-      <strong id="revMeaning"></strong>
-      <div id="revExample" class="muted" style="margin-top:4px"></div>
+      <input id="email" placeholder="tu@correo.com" style="min-width:260px">
+      <button id="sendOtpBtn">Enviar código</button>
     </div>
     <div class="row">
-      <button data-q="0">Again</button>
-      <button data-q="3">Good</button>
-      <button data-q="5">Easy</button>
+      <input id="otp" placeholder="Código de 6 dígitos" style="min-width:260px">
+      <button id="verifyBtn">Verificar</button>
     </div>
-  </div>
-</section>
+    <p class="muted">Revisá tu inbox/spam. El código caduca pronto.</p>
+  </section>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  /* ===== 1) Pegá tus claves aquí ===== */
+  <!-- === App === -->
+  <section id="appSection" class="hidden">
+    <div class="card">
+      <h3>Agregar palabra</h3>
+      <div class="grid">
+        <input id="term"    placeholder="Palabra en Tagalog *">
+        <input id="meaning" placeholder="Significado (ES/EN)">
+        <input id="example" placeholder="Ejemplo de uso">
+        <input id="tags"    placeholder="Etiquetas: saludo,verbo (coma separadas)">
+      </div>
+      <div class="grid">
+        <input id="notes" placeholder="Notas">
+        <div class="row">
+          <select id="fromLang"><option>Tagalog</option><option>English</option><option>Spanish</option></select>
+          <select id="toLang"><option>Spanish</option><option>English</option></select>
+          <button class="primary" id="addBtn">Agregar</button>
+          <button id="exportBtn">Exportar CSV</button>
+        </div>
+      </div>
+      <div class="row">
+        <input id="search" placeholder="Buscar..." style="flex:1">
+        <select id="sort">
+          <option value="created_at.desc">Recientes primero</option>
+          <option value="term.asc">A–Z</option>
+          <option value="term.desc">Z–A</option>
+          <option value="updated_at.desc">Editadas reciente</option>
+        </select>
+        <span class="muted" id="countLabel"></span>
+      </div>
+    </div>
+
+    <!-- Vacío inteligente -->
+    <div id="emptyHero" class="card hidden" style="margin-top:12px;">
+      <h3>¿Primera vez aquí?</h3>
+      <p class="muted">Añadí tus primeras palabras o te cargo 5 de ejemplo.</p>
+      <button class="primary" id="addExamplesBtn">Añadir ejemplos</button>
+    </div>
+
+    <div id="list" class="card"></div>
+
+    <div class="row">
+      <button class="primary" id="reviewBtn">Repasar hoy</button>
+      <span id="dueInfo" class="muted"></span>
+    </div>
+
+    <div id="reviewCard" class="card hidden">
+      <div class="muted">Tarjeta <span id="revPos">0</span></div>
+      <h2 id="revTerm" style="margin:8px 0 4px 0"></h2>
+      <div id="revHint" class="muted"></div>
+      <button id="showAnsBtn">Mostrar significado</button>
+      <div id="revAnswer" class="hidden" style="margin-top:8px">
+        <strong id="revMeaning"></strong>
+        <div id="revExample" class="muted" style="margin-top:4px"></div>
+      </div>
+      <div class="row">
+        <button data-q="0">Again</button>
+        <button data-q="3">Good</button>
+        <button data-q="5">Easy</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+  /* ===== Config Supabase ===== */
   const SUPABASE_URL = "https://wszrttutzsmzayzpbnjq.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  /* Helpers */
+  /* ===== Helpers UI ===== */
   const qs = s => document.querySelector(s);
+  function showToast(msg,type='ok'){
+    const wrap = qs('#toast'); if(!wrap) return window._nativeAlert ? _nativeAlert(msg) : console.log(msg);
+    const el = document.createElement('div');
+    el.className = 'toast ' + (type==='error' ? 'error' : 'ok');
+    el.textContent = msg;
+    wrap.appendChild(el);
+    setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(6px)';
+      el.addEventListener('transitionend', ()=>el.remove(), {once:true});
+    }, 2000);
+  }
+  // Reemplazamos alert por toast (guardamos original por si acaso)
+  const _nativeAlert = window.alert.bind(window);
+  window.alert = (m)=>showToast(m,'ok');
+
+  function debounce(fn,ms){let t; return (...a)=>{clearTimeout(t); t=setTimeout(()=>fn(...a),ms);};}
+  function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
+
   const authSection = qs('#authSection');
   const appSection  = qs('#appSection');
   const userBox     = qs('#userBox');
@@ -178,20 +223,47 @@
   const listEl      = qs('#list');
   const countEl     = qs('#countLabel');
 
-  /* ===== 2) Login OTP ===== */
+  /* ===== Metas & racha (localStorage) ===== */
+  const GOAL = 20;
+  const todayKey = ()=> new Date().toISOString().slice(0,10);
+  function getTodayObj(){ const k='talalog.today.'+todayKey(); return { key:k, count:+(localStorage.getItem(k)||0) }; }
+  function updateTodayPill(v){ const c = v!=null? v : getTodayObj().count; qs('#todayGoal').textContent = `Hoy ${c}/${GOAL}`; }
+  function incToday(n=1){ const t=getTodayObj(); const v=t.count+n; localStorage.setItem(t.key, v); updateTodayPill(v); }
+  function bumpStreakIfNeeded(){
+    const today = todayKey();
+    const last  = localStorage.getItem('talalog.lastActive');
+    let s = +localStorage.getItem('talalog.streak')||0;
+    if(last!==today){
+      const y = new Date(); y.setDate(y.getDate()-1);
+      s = (last === y.toISOString().slice(0,10)) ? s+1 : 1;
+      localStorage.setItem('talalog.streak', s);
+      localStorage.setItem('talalog.lastActive', today);
+    }
+    qs('#streakPill').textContent = `🔥 ${s}`;
+  }
+  async function updateDuePill(){
+    const { data:{session} } = await client.auth.getSession(); if(!session) return;
+    const now = new Date().toISOString();
+    const { count, error } = await client.from('words').select('id',{count:'exact',head:true})
+      .eq('user_id', session.user.id).lte('next_review_at', now);
+    if(!error){ qs('#duePill').textContent = `Pendientes ${count||0}`; qs('#dueInfo').textContent = `${count||0} para repasar`; }
+  }
+  async function updateCounters(){ updateTodayPill(); bumpStreakIfNeeded(); await updateDuePill(); }
+
+  /* ===== OTP ===== */
   qs('#sendOtpBtn').onclick = async () => {
     const email = qs('#email').value.trim();
     if (!email) return alert('Poné tu correo');
     const { error } = await client.auth.signInWithOtp({ email });
-    if (error) return alert(error.message);
-    alert('Código enviado. Revisá tu email.');
+    if (error) return showToast(error.message,'error');
+    showToast('Código enviado. Revisá tu email.');
   };
   qs('#verifyBtn').onclick = async () => {
     const email = qs('#email').value.trim();
     const token = qs('#otp').value.trim();
-    if (!email || !token) return alert('Correo y código');
+    if (!email || !token) return showToast('Correo y código','error');
     const { error } = await client.auth.verifyOtp({ email, token, type: 'email' });
-    if (error) return alert(error.message);
+    if (error) return showToast(error.message,'error');
     await onAuthed();
   };
   qs('#signOutBtn').onclick = async () => { await client.auth.signOut(); location.reload(); };
@@ -203,9 +275,10 @@
     userBox.classList.remove('hidden');
     appSection.classList.remove('hidden');
     await loadWords();
+    await updateCounters();
   }
 
-  /* ===== 3) Guardar palabra ===== */
+  /* ===== Guardar palabra ===== */
   qs('#addBtn').onclick = addWord;
   async function addWord() {
     const term     = qs('#term').value.trim();
@@ -214,10 +287,10 @@
     const notes    = qs('#notes').value.trim();
     const tagsRaw  = qs('#tags').value.trim();
     const tags     = tagsRaw ? tagsRaw.split(',').map(s => s.trim()).filter(Boolean) : null;
-    if (!term || !meaning) return alert('Palabra y significado son obligatorios');
+    if (!term || !meaning) return showToast('Palabra y significado son obligatorios','error');
 
     const { data: { session } } = await client.auth.getSession();
-    if (!session) return alert('Iniciá sesión');
+    if (!session) return showToast('Iniciá sesión','error');
 
     const row = {
       user_id: session.user.id,
@@ -232,14 +305,16 @@
     };
 
     const { error } = await client.from('words').insert(row).select().single();
-    if (error) { console.error(error); return alert('No se pudo guardar: ' + error.message); }
+    if (error) { console.error(error); return showToast('No se pudo guardar: ' + error.message,'error'); }
 
     ['#term','#meaning','#example','#notes','#tags'].forEach(id => qs(id).value = '');
+    showToast('Palabra agregada');
     await loadWords();
+    await updateCounters();
   }
 
-  /* ===== 4) Listar / buscar / ordenar ===== */
-  qs('#search').oninput = () => loadWords();
+  /* ===== Listar / buscar / ordenar ===== */
+  qs('#search').oninput = debounce(()=>loadWords(), 250);
   qs('#sort').onchange  = () => loadWords();
 
   async function loadWords() {
@@ -257,18 +332,24 @@
     if (q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%`);
 
     const { data, error } = await query;
-    if (error) { console.error(error); return alert(error.message); }
+    if (error) { console.error(error); return showToast(error.message,'error'); }
     renderList(data || []);
+    toggleEmptyHero(!(data && data.length));
   }
 
-  /* ===== 5) Barra de “frescura” (baja sola cada día, sube al practicar) ===== */
+  function toggleEmptyHero(show){
+    const el = qs('#emptyHero'); if(!el) return;
+    el.classList[show?'remove':'add']('hidden');
+  }
+
+  /* ===== Barra “frescura” ===== */
   function freshnessPct(row){
-    const last = new Date(row.last_review_at || row.created_at); // última práctica o creación
+    const last = new Date(row.last_review_at || row.created_at);
     const now  = new Date();
-    const daysSince = (now - last) / 86400000;                   // días transcurridos
-    const targetDays = Math.max(1, row.interval_days || 1);      // intervalo SM-2 actual
-    const left = Math.max(0, 1 - (daysSince / targetDays));      // 1 → 0 lineal
-    return Math.round(left * 100);                                // 0–100%
+    const daysSince = (now - last) / 86400000;
+    const targetDays = Math.max(1, row.interval_days || 1);
+    const left = Math.max(0, 1 - (daysSince / targetDays));
+    return Math.round(left * 100);
   }
 
   function renderList(rows) {
@@ -300,15 +381,39 @@
   }
   window.delWord = async (id) => {
     const { error } = await client.from('words').delete().eq('id', id);
-    if (error) { console.error(error); return alert(error.message); }
+    if (error) { console.error(error); return showToast(error.message,'error'); }
+    showToast('Eliminado');
     await loadWords();
+    await updateCounters();
   };
 
-  /* ===== 6) Exportar CSV ===== */
+  /* ===== Vacío: añadir ejemplos ===== */
+  qs('#addExamplesBtn')?.addEventListener('click', addExamples);
+  async function addExamples(){
+    const { data:{session} } = await client.auth.getSession(); if(!session) return showToast('Iniciá sesión','error');
+    const now = new Date().toISOString();
+    const samples = [
+      {term:'kape',   meaning:'café'},
+      {term:'tubig',  meaning:'agua'},
+      {term:'salamat',meaning:'gracias'},
+      {term:'oo',     meaning:'sí'},
+      {term:'hindi',  meaning:'no'}
+    ].map(r=>({
+      user_id:session.user.id, ...r, example:null, notes:null, tags:['basics'],
+      from_lang:'Tagalog', to_lang:'Spanish', ease:2.5, repetitions:0, interval_days:0, next_review_at:now
+    }));
+    const { error } = await client.from('words').insert(samples);
+    if(error) return showToast(error.message,'error');
+    showToast('Ejemplos agregados');
+    await loadWords();
+    await updateCounters();
+  }
+
+  /* ===== Exportar CSV ===== */
   qs('#exportBtn').onclick = async () => {
     const { data: { session } } = await client.auth.getSession(); if (!session) return;
     const { data, error } = await client.from('words').select('*').eq('user_id', session.user.id);
-    if (error) return alert(error.message);
+    if (error) return showToast(error.message,'error');
     const rows = data || [];
     const csv = ['term,meaning,example,notes,tags,from_lang,to_lang,created_at']
       .concat(rows.map(r => [
@@ -318,7 +423,7 @@
     const a = document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
   };
 
-  /* ===== 7) Repaso (SM-2) ===== */
+  /* ===== Repaso (SM-2) ===== */
   let reviewQueue=[], current=null, reviewed=0;
   qs('#reviewBtn').onclick = startReview;
   qs('#showAnsBtn').onclick = () => qs('#revAnswer').classList.toggle('hidden');
@@ -331,31 +436,31 @@
       .select('*').eq('user_id', session.user.id)
       .lte('next_review_at', now)
       .order('next_review_at', { ascending:true });
-    if (error) return alert(error.message);
+    if (error) return showToast(error.message,'error');
     reviewQueue = data || []; reviewed = 0;
     qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
+    if (!reviewQueue.length){ showToast('Nada para hoy. ¡Agregá o prepara mañana!'); return; }
     nextCard();
   }
-function nextCard() {
-  current = reviewQueue.shift();
 
-  if (!current) {
-    // No hay más tarjetas → cerramos la tarjeta y avisamos UNA sola vez
-    qs('#reviewCard').classList.add('hidden');
-    qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
-    alert('¡Repaso listo!');
-    return; // 👈 importante: NO volver a llamar startReview()
+  function nextCard() {
+    current = reviewQueue.shift();
+    if (!current) {
+      qs('#reviewCard').classList.add('hidden');
+      qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
+      showToast('¡Repaso listo!');
+      updateCounters();
+      return; // no llamar startReview de nuevo
+    }
+    reviewed++;
+    qs('#revPos').textContent = `${reviewed}`;
+    qs('#revTerm').textContent = current.term;
+    qs('#revHint').textContent = (current.from_lang||'Tagalog')+' → '+(current.to_lang||'Spanish');
+    qs('#revMeaning').textContent = current.meaning||'';
+    qs('#revExample').textContent = current.example||'';
+    qs('#revAnswer').classList.add('hidden');
+    qs('#reviewCard').classList.remove('hidden');
   }
-
-  reviewed++;
-  qs('#revPos').textContent = `${reviewed}`;
-  qs('#revTerm').textContent = current.term;
-  qs('#revHint').textContent = (current.from_lang||'Tagalog')+' → '+(current.to_lang||'Spanish');
-  qs('#revMeaning').textContent = current.meaning||'';
-  qs('#revExample').textContent = current.example||'';
-  qs('#revAnswer').classList.add('hidden');
-  qs('#reviewCard').classList.remove('hidden');
-}
 
   function sm2(prevEase=2.5, prevInterval=0, prevReps=0, q=3){
     let EF = prevEase, reps = prevReps, I = prevInterval;
@@ -370,6 +475,7 @@ function nextCard() {
     }
     return { EF, I, reps };
   }
+
   async function gradeCard(quality) {
     if (!current) return;
     const { EF, I, reps } = sm2(current.ease||2.5, current.interval_days||0, current.repetitions||0, quality);
@@ -380,18 +486,28 @@ function nextCard() {
       next_review_at: next.toISOString()
     };
     const { error } = await client.from('words').update(updates).eq('id', current.id);
-    if (error) { console.error(error); return alert('No pude actualizar: '+error.message); }
-    await loadWords();     // refresca barra
+    if (error) { console.error(error); return showToast('No pude actualizar: '+error.message,'error'); }
+    // progreso diario y contadores
+    if (quality >= 3) incToday(1);
+    await loadWords();
     nextCard();
   }
 
-  /* Utilidad */
-  function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
+  // Atajos de teclado
+  document.addEventListener('keydown',(e)=>{
+    const card = qs('#reviewCard');
+    if(!card || card.classList.contains('hidden')) return;
+    if(e.code==='Space'){ e.preventDefault(); qs('#revAnswer').classList.toggle('hidden'); return; }
+    if(e.key==='j'||e.key==='J'){ gradeCard(0); return; }
+    if(e.key==='k'||e.key==='K'){ gradeCard(3); return; }
+    if(e.key==='l'||e.key==='L'){ gradeCard(5); return; }
+    if(e.key==='Escape'){ card.classList.add('hidden'); return; }
+  });
 
   /* Auto-login si ya hay sesión */
   client.auth.getSession().then(({data:{session}})=>{ if (session) onAuthed(); });
-</script>
-<footer class="credits">Gawa ni Harry</footer>
+  </script>
+
+  <footer class="credits">Gawa ni Harry</footer>
 </body>
 </html>
-
