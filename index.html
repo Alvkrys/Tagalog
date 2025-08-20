@@ -5,21 +5,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TalaLog — Vocabulario Tagalog</title>
   <style>
-    :root { --bg:#fafafa; --ink:#171717; --muted:#6b7280; --bd:#e5e7eb; --brand:#4f46e5; }
+    /* ===== Paleta clara y tranquila (menta + lavanda) ===== */
+    :root{
+      --bg:#f7faf9;        /* fondo muy claro */
+      --panel:#ffffff;     /* tarjetas y paneles */
+      --ink:#0f172a;       /* texto principal */
+      --muted:#64748b;     /* texto secundario */
+      --bd:#e5e7eb;        /* bordes sutiles */
+
+      --brand:#34d399;     /* menta (primario) */
+      --brand-2:#a78bfa;   /* lavanda (complemento) */
+
+      --progress-bg:#e8eef1; /* fondo de barra */
+
+      --ok:#22c55e20;      /* halos opcionales */
+      --warn:#f59e0b20;
+      --due:#ef444420;
+    }
+
     body{font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);margin:24px;max-width:980px}
     header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-    input,button,textarea,select{padding:10px;border:1px solid var(--bd);border-radius:10px;margin:4px 0}
+    input,button,textarea,select{padding:10px;border:1px solid var(--bd);border-radius:10px;margin:4px 0;background:#fff}
     button{border:1px solid var(--bd);border-radius:10px;cursor:pointer;background:#fff}
     .row{display:flex;gap:8px;flex-wrap:wrap}
-    .card{border:1px solid var(--bd);padding:12px;border-radius:10px;margin:8px 0;background:#fff}
-    .muted{color:var(--muted)}
-    .right{margin-left:auto}
-    .hidden{display:none}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     @media(max-width:728px){.grid{grid-template-columns:1fr}}
+    .hidden{display:none}
+    .right{margin-left:auto}
+    .muted{color:var(--muted)}
     .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;margin-right:6px}
+
+    /* Tarjeta con hover suave (color complementario) */
+    .card{
+      background: radial-gradient(120% 120% at 100% 0%, rgba(167,139,250,.10), rgba(255,255,255,.90) 60%), var(--panel);
+      border:1px solid var(--bd);
+      border-radius:12px;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+      padding:12px;
+      margin:8px 0;
+    }
+    .card:hover{
+      transform: translateY(-3px);
+      border-color: color-mix(in oklab, var(--brand) 40%, var(--bd));
+      box-shadow: 0 10px 24px rgba(16,24,40,.08);
+      background: radial-gradient(120% 120% at 100% 0%, rgba(52,211,153,.10), rgba(255,255,255,.92) 60%), var(--panel);
+    }
+
+    /* Lista */
     .list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9}
+
+    /* Botón principal */
     .primary{background:var(--brand);color:#fff;border-color:transparent}
+
+    /* Barra de progreso “frescura” */
+    .progress{height:6px;background:var(--progress-bg);border-radius:999px;overflow:hidden;margin-top:6px}
+    .progress > i{display:block;height:100%;width:var(--pct,0%);background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .4s ease;border-radius:inherit}
+
+    /* Halos (opcional) según estado */
+    .card.is-ok{box-shadow:0 0 0 6px var(--ok) inset}
+    .card.is-warn{box-shadow:0 0 0 6px var(--warn) inset}
+    .card.is-due{box-shadow:0 0 0 6px var(--due) inset}
+
+    /* Efecto de texto en hover (sutil) */
+    .list-item:hover strong{
+      background:linear-gradient(90deg,var(--brand),var(--brand-2));
+      -webkit-background-clip:text;background-clip:text;color:transparent
+    }
   </style>
 </head>
 <body>
@@ -69,8 +120,8 @@
       <input id="search" placeholder="Buscar..." style="flex:1">
       <select id="sort">
         <option value="created_at.desc">Recientes primero</option>
-        <option value="term.asc">A→Z</option>
-        <option value="term.desc">Z→A</option>
+        <option value="term.asc">A–Z</option>
+        <option value="term.desc">Z–A</option>
         <option value="updated_at.desc">Editadas reciente</option>
       </select>
       <span class="muted" id="countLabel"></span>
@@ -103,12 +154,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // ==== CONFIG: pegá tus claves (o dejá las que ya tenías) ====
+  /* ===== 1) Pegá tus claves aquí ===== */
   const SUPABASE_URL = "https://wszrttutzsmzayzpbnjq.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Helpers
+  /* Helpers */
   const qs = s => document.querySelector(s);
   const authSection = qs('#authSection');
   const appSection  = qs('#appSection');
@@ -117,11 +168,11 @@
   const listEl      = qs('#list');
   const countEl     = qs('#countLabel');
 
-  // === Auth (OTP) ===
+  /* ===== 2) Login OTP ===== */
   qs('#sendOtpBtn').onclick = async () => {
     const email = qs('#email').value.trim();
     if (!email) return alert('Poné tu correo');
-    const { error } = await client.auth.signInWithOtp({ email }); // passwordless OTP
+    const { error } = await client.auth.signInWithOtp({ email });
     if (error) return alert(error.message);
     alert('Código enviado. Revisá tu email.');
   };
@@ -129,7 +180,7 @@
     const email = qs('#email').value.trim();
     const token = qs('#otp').value.trim();
     if (!email || !token) return alert('Correo y código');
-    const { data, error } = await client.auth.verifyOtp({ email, token, type: 'email' }); // verifica OTP
+    const { error } = await client.auth.verifyOtp({ email, token, type: 'email' });
     if (error) return alert(error.message);
     await onAuthed();
   };
@@ -144,7 +195,7 @@
     await loadWords();
   }
 
-  // === Guardar ===
+  /* ===== 3) Guardar palabra ===== */
   qs('#addBtn').onclick = addWord;
   async function addWord() {
     const term     = qs('#term').value.trim();
@@ -177,7 +228,7 @@
     await loadWords();
   }
 
-  // === Listar / Buscar / Ordenar ===
+  /* ===== 4) Listar / buscar / ordenar ===== */
   qs('#search').oninput = () => loadWords();
   qs('#sort').onchange  = () => loadWords();
 
@@ -200,17 +251,37 @@
     renderList(data || []);
   }
 
+  /* ===== 5) Barra de “frescura” (baja sola cada día, sube al practicar) ===== */
+  function freshnessPct(row){
+    const last = new Date(row.last_review_at || row.created_at); // última práctica o creación
+    const now  = new Date();
+    const daysSince = (now - last) / 86400000;                   // días transcurridos
+    const targetDays = Math.max(1, row.interval_days || 1);      // intervalo SM-2 actual
+    const left = Math.max(0, 1 - (daysSince / targetDays));      // 1 → 0 lineal
+    return Math.round(left * 100);                                // 0–100%
+  }
+
   function renderList(rows) {
     countEl.textContent = `${rows.length} palabra(s)`;
     listEl.innerHTML = '';
     if (!rows.length) { listEl.innerHTML = '<div class="muted">No hay resultados. Agregá tu primera palabra 🫰</div>'; return; }
 
     rows.forEach(r => {
+      const pct = freshnessPct(r);
+      const stateClass = pct > 60 ? 'is-ok' : pct > 25 ? 'is-warn' : 'is-due';
+
       const div = document.createElement('div');
-      div.className = 'list-item';
+      div.className = `list-item card ${stateClass}`;
       div.innerHTML = `
-        <div><strong>${escapeHtml(r.term)}</strong><div class="muted">${escapeHtml(r.example||'')}</div></div>
-        <div>${escapeHtml(r.meaning||'')}<div>${(r.tags||[]).map(t=>`<span class="chip">${escapeHtml(t)}</span>`).join('')}</div></div>
+        <div>
+          <strong>${escapeHtml(r.term)}</strong>
+          <div class="muted">${escapeHtml(r.example||'')}</div>
+          <div class="progress"><i style="--pct:${pct}%"></i></div>
+        </div>
+        <div>
+          ${escapeHtml(r.meaning||'')}
+          <div>${(r.tags||[]).map(t=>`<span class="chip">${escapeHtml(t)}</span>`).join('')}</div>
+        </div>
         <div class="right">
           <button onclick="delWord('${r.id}')">Eliminar</button>
         </div>`;
@@ -223,7 +294,7 @@
     await loadWords();
   };
 
-  // === Exportar CSV ===
+  /* ===== 6) Exportar CSV ===== */
   qs('#exportBtn').onclick = async () => {
     const { data: { session } } = await client.auth.getSession(); if (!session) return;
     const { data, error } = await client.from('words').select('*').eq('user_id', session.user.id);
@@ -237,7 +308,7 @@
     const a = document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
   };
 
-  // === Repaso (SM-2 simplificado) ===
+  /* ===== 7) Repaso (SM-2) ===== */
   let reviewQueue=[], current=null, reviewed=0;
   qs('#reviewBtn').onclick = startReview;
   qs('#showAnsBtn').onclick = () => qs('#revAnswer').classList.toggle('hidden');
@@ -290,14 +361,16 @@
     };
     const { error } = await client.from('words').update(updates).eq('id', current.id);
     if (error) { console.error(error); return alert('No pude actualizar: '+error.message); }
+    await loadWords();     // refresca barra
     nextCard();
   }
 
-  // Utilidades
+  /* Utilidad */
   function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
 
-  // === Auto-login si ya hay sesión
+  /* Auto-login si ya hay sesión */
   client.auth.getSession().then(({data:{session}})=>{ if (session) onAuthed(); });
 </script>
 </body>
 </html>
+
