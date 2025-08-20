@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="es" data-theme="system">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tagalog — Vocabulario</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    /* ===== Paleta (claro/oscuro) ===== */
+    :root{
+      --bg:#f7faf9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --bd:#e5e7eb;
+      --brand:#34d399; --brand-2:#a78bfa; --progress-bg:#e8eef1;
+      --ok:#22c55e20; --warn:#f59e0b20; --due:#ef444420;
+    }
+    [data-theme="dark"]{
+      --bg:#0b1220; --panel:#0f172a; --ink:#e5e7eb; --muted:#90a2b2; --bd:#233044;
+      --progress-bg:#132033;
+    }
+
+    body{font:16px/1.45 system-ui,Segoe UI,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);margin:18px}
+    .container{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr;gap:16px}
+    @media(max-width:980px){ .container{grid-template-columns:1fr} }
+
+    header{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:8px}
+    .brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:22px}
+    .chip{font-size:12px;padding:6px 10px;border:1px solid var(--bd);border-radius:999px;background:var(--panel)}
+    .badge{font-size:12px;border-radius:999px;padding:2px 8px;background:#eef2ff;color:#3730a3;margin-left:6px}
+
+    input,button,textarea,select{padding:10px;border:1px solid var(--bd);border-radius:10px;margin:4px 0;background:var(--panel);color:var(--ink)}
+    button{cursor:pointer}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    @media(max-width:720px){.grid{grid-template-columns:1fr}}
+    .hidden{display:none}
+    .right{margin-left:auto}
+    .muted{color:var(--muted)}
+    .card{
+      background: radial-gradient(120% 120% at 100% 0%, rgba(167,139,250,.10), rgba(255,255,255,.90) 60%), var(--panel);
+      border:1px solid var(--bd);border-radius:12px;transition:.18s; padding:12px; margin:8px 0;
+    }
+    .primary{background:var(--brand);color:#fff;border-color:transparent}
+    .progress{height:6px;background:var(--progress-bg);border-radius:999px;overflow:hidden;margin-top:6px}
+    .progress > i{display:block;height:100%;width:var(--pct,0%);background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .4s ease;border-radius:inherit}
+    .card.is-ok{box-shadow:0 0 0 6px var(--ok) inset}
+    .card.is-warn{box-shadow:0 0 0 6px var(--warn) inset}
+    .card.is-due{box-shadow:0 0 0 6px var(--due) inset}
+    .list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)}
+
+    .sidebar .section{padding:10px;border:1px solid var(--bd);border-radius:12px;background:var(--panel);margin-bottom:10px}
+    .coach-count{display:flex;gap:8px;align-items:center}
+    .circle{width:44px;height:44px;border-radius:999px;border:2px solid var(--bd);display:grid;place-items:center;font-weight:700}
+
+    /* Accordion */
+    .acc{border-radius:12px;overflow:hidden;border:1px solid var(--bd);background:var(--panel)}
+    .acc-item+.acc-item{border-top:1px solid var(--bd)}
+    .acc-h{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;cursor:pointer;background:var(--panel)}
+    .acc-c{display:none;padding:8px 12px;background:var(--panel)}
+    .acc-item.open .acc-c{display:block}
+
+    /* Toasts */
+    #toast{ position:fixed; right:20px; bottom:20px; display:flex; flex-direction:column; gap:8px; z-index:9999;}
+    .toast{ background:var(--panel); border:1px solid var(--bd); border-left:4px solid var(--brand); padding:10px 12px; border-radius:10px; box-shadow:0 10px 24px rgba(16,24,40,.08); color:var(--ink); min-width:220px; transition:.3s ease;}
+    .toast.error{ border-left-color:#ef4444;}
+
+    .credits{ text-align:center; color:#d4af37; font-size:12px; margin:28px 0 8px; opacity:.9;}
+    .flag{font-size:22px;vertical-align:-2px}
+  </style>
+</head>
+<body>
+<div id="toast" aria-live="polite"></div>
+<header class="container" style="grid-template-columns:1fr;">
+  <div class="brand">
+    <span class="flag" aria-label="Bandera de Filipinas">🇵🇭</span> <span>Tagalog</span>
+  </div>
+  <div class="row" style="align-items:center;gap:6px">
+    <span class="chip" id="todayChip">Hoy 0 / 20</span>
+    <span class="chip" id="dueChip">Pendientes 0</span>
+    <button class="chip" id="themeBtn" title="Cambia: sistema → claro → oscuro">Tema</button>
+    <div id="userBox" class="hidden">
+      <span id="userEmail" class="muted"></span>
+      <button id="signOutBtn">Salir</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <!-- ===== Columna principal ===== -->
+  <main>
+    <!-- Auth -->
+    <section id="authSection" class="card">
+      <h3>Entrá con tu correo (OTP)</h3>
+      <div class="row">
+        <input id="email" placeholder="tu@correo.com" style="min-width:260px">
+        <button id="sendOtpBtn">Enviar código</button>
+      </div>
+      <div class="row">
+        <input id="otp" placeholder="Código de 6 dígitos" style="min-width:260px">
+        <button id="verifyBtn">Verificar</button>
+      </div>
+      <p class="muted">Revisá tu inbox/spam. El código caduca pronto.</p>
+    </section>
+
+    <!-- App -->
+    <section id="appSection" class="hidden">
+      <div class="card">
+        <h3>Agregar palabra</h3>
+        <div class="grid">
+          <input id="term"    placeholder="Palabra en Tagalog *">
+          <input id="meaning" placeholder="Significado (ES/EN)">
+          <input id="example" placeholder="Ejemplo de uso">
+          <input id="tags"    placeholder="Etiquetas: saludo,verbo (coma separadas)">
+        </div>
+        <div class="grid">
+          <input id="notes" placeholder="Notas">
+          <div class="row">
+            <select id="fromLang"><option>Tagalog</option><option>English</option><option>Spanish</option></select>
+            <select id="toLang"><option>Spanish</option><option>English</option></select>
+            <button class="primary" id="addBtn">Agregar</button>
+            <button id="exportBtn">Exportar CSV</button>
+          </div>
+        </div>
+        <div class="row">
+          <input id="quick" placeholder="Entrada rápida: kape | café | saludo,comida | ej: gusto ko ng kape" style="flex:1">
+          <button id="quickBtn">Parsear</button>
+        </div>
+        <div class="row">
+          <input id="search" placeholder="Buscar..." style="flex:1">
+          <select id="sort">
+            <option value="created_at.desc">Recientes primero</option>
+            <option value="term.asc">A–Z</option>
+            <option value="term.desc">Z–A</option>
+            <option value="updated_at.desc">Editadas reciente</option>
+          </select>
+          <span class="muted" id="countLabel"></span>
+        </div>
+      </div>
+
+      <!-- Primera vez -->
+      <div class="card">
+        <h3>¿Primera vez aquí?</h3>
+        <p class="muted">Añadí tus primeras palabras o te cargo 5 de ejemplo.</p>
+        <button class="primary" id="seedBtn">Añadir ejemplos</button>
+      </div>
+
+      <div id="list" class="card"></div>
+
+      <div class="row">
+        <button class="primary" id="reviewBtn">Repasar hoy</button>
+        <span id="dueInfo" class="muted"></span>
+      </div>
+
+      <div id="reviewCard" class="card hidden">
+        <div class="muted">Tarjeta <span id="revPos">0</span></div>
+        <h2 id="revTerm" style="margin:8px 0 4px 0"></h2>
+        <div id="revHint" class="muted"></div>
+        <button id="showAnsBtn">Mostrar significado</button>
+        <div id="revAnswer" class="hidden" style="margin-top:8px">
+          <strong id="revMeaning"></strong>
+          <div id="revExample" class="muted" style="margin-top:4px"></div>
+        </div>
+        <div class="row">
+          <button data-q="0">Again (1)</button>
+          <button data-q="3">Good (2)</button>
+          <button data-q="5">Easy (3)</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar">
+    <div class="section">
+      <h4>Coach</h4>
+      <div class="coach-count">
+        <div class="circle"><span id="coachToday">0/20</span></div>
+        <div>
+          <div>Racha: 🔥 <span id="streakNum">0</span></div>
+          <div>Pendientes: <span id="dueNum">0</span></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="primary" id="coachReview">Repasar ahora</button>
+        <button id="coachSeed">Añadir ejemplos</button>
+      </div>
+    </div>
+
+    <div class="section" id="dailyBox">
+      <h4>Palabra del día</h4>
+      <div><b id="dailyTerm">—</b> <span class="badge">basics</span></div>
+      <div id="dailyMeaning" class="muted">—</div>
+      <div id="dailyExample" class="muted">—</div>
+      <button id="addDaily" style="margin-top:6px">Añadir a mis palabras</button>
+    </div>
+
+    <div class="section">
+      <h4>Paquetes recomendados</h4>
+      <div class="acc" id="pkgBox">
+        <!-- se llena dinámicamente -->
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer class="credits">Gawa ni Harry</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ====== Config Supabase ====== */
+const SUPABASE_URL = "https://wszrttutzsmzayzpbnjq.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ====== Helpers ====== */
+const qs = s => document.querySelector(s);
+const authSection = qs('#authSection');
+const appSection  = qs('#appSection');
+const userBox     = qs('#userBox');
+const userEmailEl = qs('#userEmail');
+const listEl      = qs('#list');
+const countEl     = qs('#countLabel');
+const toastBox    = qs('#toast');
+const THEME_KEY='talalog_theme';
+const GOAL_KEY='talalog_goal';
+const STREAK_KEY='talalog_streak';
+const LAST_DAY_KEY='talalog_lastday';
+const GOAL_DEFAULT=20;
+
+function toast(msg,err=false){
+  const d=document.createElement('div');
+  d.className='toast'+(err?' error':'');
+  d.textContent=msg;
+  toastBox.appendChild(d);
+  setTimeout(()=>d.remove(), 2600);
+}
+function escapeHtml(s){return String(s??'').replace(/[&<>\"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
+
+/* ====== Theme ====== */
+function applyTheme(v){ document.documentElement.setAttribute('data-theme', v); localStorage.setItem(THEME_KEY,v);}
+qs('#themeBtn').onclick=()=>{
+  const cur=localStorage.getItem(THEME_KEY)||'system';
+  applyTheme(cur==='system'?'light':cur==='light'?'dark':'system');
+};
+applyTheme(localStorage.getItem(THEME_KEY)||'system');
+
+/* ====== Auth ====== */
+qs('#sendOtpBtn').onclick = async () => {
+  const email = qs('#email').value.trim();
+  if (!email) return toast('Poné tu correo',true);
+  const { error } = await client.auth.signInWithOtp({ email });
+  if (error) return toast(error.message,true);
+  toast('Código enviado. Revisá tu email.');
+};
+qs('#verifyBtn').onclick = async () => {
+  const email = qs('#email').value.trim();
+  const token = qs('#otp').value.trim();
+  if (!email || !token) return toast('Correo y código',true);
+  const { error } = await client.auth.verifyOtp({ email, token, type: 'email' });
+  if (error) return toast(error.message,true);
+  await onAuthed();
+};
+qs('#signOutBtn').onclick = async () => { await client.auth.signOut(); location.href='./'; };
+
+async function onAuthed() {
+  const { data: { user } } = await client.auth.getUser();
+  userEmailEl.textContent = user?.email || '';
+  authSection.classList.add('hidden');
+  userBox.classList.remove('hidden');
+  appSection.classList.remove('hidden');
+  initCoach();
+  await loadDictionary();
+  await loadWords();
+  hydrateDailyFromDict();
+  buildPackages();
+}
+
+/* ====== Diccionario interno (1000+) ======
+   - La app intenta cargar ./ph_dictionary.json
+   - Si no existe, usa ./ph_dictionary.sample.json (50 ejemplos).
+   Estructura: [{term,meaning,example,tags:["tema","..."]}, ...]
+================================================ */
+let DICT = [];
+async function loadDictionary(){
+  try{
+    const r = await fetch('./ph_dictionary.json',{cache:'force-cache'});
+    if(!r.ok) throw 0;
+    DICT = await r.json();
+  }catch{
+    const r2 = await fetch('./ph_dictionary.sample.json',{cache:'force-cache'});
+    DICT = r2.ok ? await r2.json() : [];
+  }
+}
+
+/* ====== Guardar palabra del usuario ====== */
+qs('#addBtn').onclick = addWord;
+qs('#quickBtn').onclick=()=>{
+  const t = qs('#quick').value.trim();
+  if(!t) return;
+  const [term,meaning,tags,ex] = t.split('|').map(s=>s?.trim());
+  if(term) qs('#term').value=term;
+  if(meaning) qs('#meaning').value=meaning;
+  if(tags) qs('#tags').value=tags;
+  if(ex) qs('#example').value=ex;
+};
+
+async function addWord(rowOverride){
+  const term     = rowOverride?.term     ?? qs('#term').value.trim();
+  const meaning  = rowOverride?.meaning  ?? qs('#meaning').value.trim();
+  const example  = rowOverride?.example  ?? qs('#example').value.trim();
+  const notes    = rowOverride?.notes    ?? qs('#notes').value.trim();
+  const tagsArr  = rowOverride?.tags     ?? (qs('#tags').value.trim()? qs('#tags').value.trim().split(',').map(s=>s.trim()).filter(Boolean): null);
+  if (!term || !meaning) return toast('Palabra y significado obligatorios',true);
+
+  const { data: { session } } = await client.auth.getSession();
+  if (!session) return toast('Iniciá sesión',true);
+
+  const row = {
+    user_id: session.user.id, term, meaning,
+    example: example||null, notes: notes||null, tags: tagsArr,
+    from_lang: qs('#fromLang').value, to_lang: qs('#toLang').value,
+    ease: 2.5, repetitions: 0, interval_days: 0,
+    next_review_at: new Date().toISOString()
+  };
+
+  const { error } = await client.from('words').insert(row).select().single();
+  if (error) { console.error(error); return toast('No se pudo guardar: '+error.message,true); }
+  ['#term','#meaning','#example','#notes','#tags','#quick'].forEach(id => qs(id).value = '');
+  toast('Guardado');
+  await loadWords();
+}
+
+/* ====== Listar / buscar / ordenar ====== */
+qs('#search').oninput = () => loadWords();
+qs('#sort').onchange  = () => loadWords();
+
+async function loadWords() {
+  const { data: { session } } = await client.auth.getSession();
+  if (!session) return;
+  const q = qs('#search').value.trim();
+  const [col, dir] = (qs('#sort').value || 'created_at.desc').split('.');
+
+  let query = client.from('words')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .order(col, { ascending: dir !== 'desc' })
+    .limit(500);
+
+  if (q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%`);
+
+  const { data, error } = await query;
+  if (error) { console.error(error); return toast(error.message,true); }
+  renderList(data || []);
+  updateDue(data||[]);
+}
+
+function freshnessPct(row){
+  const last = new Date(row.last_review_at || row.created_at);
+  const now  = new Date();
+  const daysSince = (now - last) / 86400000;
+  const targetDays = Math.max(1, row.interval_days || 1);
+  const left = Math.max(0, 1 - (daysSince / targetDays));
+  return Math.round(left * 100);
+}
+
+function renderList(rows) {
+  countEl.textContent = `${rows.length} palabra(s)`;
+  listEl.innerHTML = '';
+  if (!rows.length) { listEl.innerHTML = '<div class="muted">No hay resultados. Agregá tu primera palabra 🫰</div>'; return; }
+
+  rows.forEach(r => {
+    const pct = freshnessPct(r);
+    const stateClass = pct > 60 ? 'is-ok' : pct > 25 ? 'is-warn' : 'is-due';
+
+    const div = document.createElement('div');
+    div.className = `list-item ${stateClass}`;
+    div.innerHTML = `
+      <div>
+        <strong>${escapeHtml(r.term)}</strong>
+        <div class="muted">${escapeHtml(r.example||'')}</div>
+        <div class="progress"><i style="--pct:${pct}%"></i></div>
+      </div>
+      <div>
+        ${escapeHtml(r.meaning||'')}
+        <div>${(r.tags||[]).map(t=>`<span class="badge">${escapeHtml(t)}</span>`).join('')}</div>
+      </div>
+      <div class="right">
+        <button onclick="delWord('${r.id}')">Eliminar</button>
+      </div>`;
+    listEl.appendChild(div);
+  });
+}
+window.delWord = async (id) => {
+  const { error } = await client.from('words').delete().eq('id', id);
+  if (error) { console.error(error); return toast(error.message,true); }
+  await loadWords();
+};
+
+/* ====== Export ====== */
+qs('#exportBtn').onclick = async () => {
+  const { data: { session } } = await client.auth.getSession(); if (!session) return;
+  const { data, error } = await client.from('words').select('*').eq('user_id', session.user.id);
+  if (error) return toast(error.message,true);
+  const rows = data || [];
+  const csv = ['term,meaning,example,notes,tags,from_lang,to_lang,created_at']
+    .concat(rows.map(r => [
+      r.term, r.meaning, r.example||'', r.notes||'', (r.tags||[]).join('|'), r.from_lang||'', r.to_lang||'', r.created_at
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='tagalog.csv'; a.click(); URL.revokeObjectURL(url);
+};
+
+/* ====== SRS ====== */
+let reviewQueue=[], current=null, reviewed=0;
+qs('#reviewBtn').onclick = startReview;
+qs('#coachReview').onclick = startReview;
+qs('#showAnsBtn').onclick = () => qs('#revAnswer').classList.toggle('hidden');
+document.querySelectorAll('#reviewCard [data-q]').forEach(b=>b.onclick=()=>gradeCard(+b.dataset.q));
+
+async function startReview() {
+  const { data: { session } } = await client.auth.getSession(); if (!session) return;
+  const now = new Date().toISOString();
+  const { data, error } = await client.from('words')
+    .select('*').eq('user_id', session.user.id)
+    .lte('next_review_at', now)
+    .order('next_review_at', { ascending:true });
+  if (error) return toast(error.message,true);
+  reviewQueue = data || []; reviewed = 0;
+  qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
+  nextCard();
+}
+function nextCard() {
+  current = reviewQueue.shift();
+  if (!current) {
+    qs('#reviewCard').classList.add('hidden');
+    qs('#dueInfo').textContent = `0 para repasar`;
+    toast('¡Repaso listo!');
+    bumpDayProgress( Math.max(reviewed,1) );
+    return;
+  }
+  reviewed++;
+  qs('#revPos').textContent = `${reviewed}`;
+  qs('#revTerm').textContent = current.term;
+  qs('#revHint').textContent = (current.from_lang||'Tagalog')+' → '+(current.to_lang||'Spanish');
+  qs('#revMeaning').textContent = current.meaning||'';
+  qs('#revExample').textContent = current.example||'';
+  qs('#revAnswer').classList.add('hidden');
+  qs('#reviewCard').classList.remove('hidden');
+}
+function sm2(prevEase=2.5, prevInterval=0, prevReps=0, q=3){
+  let EF = prevEase, reps = prevReps, I = prevInterval;
+  if (q < 3) { reps = 0; I = 1; }
+  else {
+    if (reps === 0) I = 1;
+    else if (reps === 1) I = 6;
+    else I = Math.round(I * EF);
+    reps += 1;
+    EF = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+    if (EF < 1.3) EF = 1.3;
+  }
+  return { EF, I, reps };
+}
+async function gradeCard(quality) {
+  if (!current) return;
+  const { EF, I, reps } = sm2(current.ease||2.5, current.interval_days||0, current.repetitions||0, quality);
+  const next = new Date(); next.setDate(next.getDate() + (I||1));
+  const updates = { ease: EF, interval_days: I, repetitions: reps,
+    last_review_at: new Date().toISOString(), next_review_at: next.toISOString() };
+  const { error } = await client.from('words').update(updates).eq('id', current.id);
+  if (error) { console.error(error); return toast('No pude actualizar: '+error.message,true); }
+  await loadWords(); // refresca barra
+  nextCard();
+}
+
+/* ====== Goal / Racha ====== */
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function initCoach(){
+  const last = localStorage.getItem(LAST_DAY_KEY);
+  const streak = +(localStorage.getItem(STREAK_KEY)||0);
+  if (last && last !== todayStr()){ // día nuevo
+    // si no alcanzó objetivo ayer → streak = 0
+    const yGoal = +(localStorage.getItem(GOAL_KEY)||GOAL_DEFAULT);
+    const yDone = +(localStorage.getItem('done_'+last)||0);
+    if (yDone < yGoal) localStorage.setItem(STREAK_KEY, 0);
+    localStorage.setItem('done_'+todayStr(), 0);
+    localStorage.setItem(LAST_DAY_KEY, todayStr());
+  }
+  if(!last){ localStorage.setItem(LAST_DAY_KEY, todayStr()); localStorage.setItem('done_'+todayStr(),0); }
+  updateCoachUI();
+}
+function bumpDayProgress(n=1){
+  const k='done_'+todayStr();
+  const cur=+(localStorage.getItem(k)||0);
+  localStorage.setItem(k, cur+n);
+  // streak
+  let s=+(localStorage.getItem(STREAK_KEY)||0);
+  localStorage.setItem(STREAK_KEY, s+1);
+  updateCoachUI();
+}
+function updateCoachUI(){
+  const goal = +(localStorage.getItem(GOAL_KEY)||GOAL_DEFAULT);
+  const done = +(localStorage.getItem('done_'+todayStr())||0);
+  qs('#coachToday').textContent = `${Math.min(done,goal)}/${goal}`;
+  qs('#todayChip').textContent = `Hoy ${Math.min(done,goal)} / ${goal}`;
+  qs('#streakNum').textContent = localStorage.getItem(STREAK_KEY)||0;
+}
+function updateDue(rows){
+  const due = rows.filter(r=> new Date(r.next_review_at)<=new Date()).length;
+  qs('#dueNum').textContent = due;
+  qs('#dueChip').textContent = `Pendientes ${due}`;
+}
+
+/* ====== Semillas y Paquetes ====== */
+qs('#seedBtn').onclick = seedExamples;
+qs('#coachSeed').onclick = seedExamples;
+
+async function seedExamples(){
+  const sample = DICT.slice(0,5);
+  for (const w of sample) await addWord(w);
+  toast('5 ejemplos añadidos');
+}
+
+function hydrateDailyFromDict(){
+  if(!DICT.length) return;
+  const i = Math.floor(Math.random()*DICT.length);
+  const w = DICT[i];
+  qs('#dailyTerm').textContent = w.term;
+  qs('#dailyMeaning').textContent = w.meaning||'';
+  qs('#dailyExample').textContent = w.example||'';
+  qs('#addDaily').onclick=()=>addWord(w);
+}
+
+/* Paquetes en accordion */
+const TOPICS = [
+  {slug:'basics', title:'Básicos'},
+  {slug:'restaurant', title:'Restaurante'},
+  {slug:'introductions', title:'Conociendo'},
+  {slug:'work', title:'Trabajo'},
+  {slug:'travel', title:'Viaje'}
+];
+function buildPackages(){
+  const box = qs('#pkgBox'); box.innerHTML='';
+  TOPICS.forEach(t=>{
+    const item=document.createElement('div'); item.className='acc-item';
+    item.innerHTML=`
+      <div class="acc-h" role="button" aria-expanded="false">
+        <div>${t.title}</div>
+        <div>▼</div>
+      </div>
+      <div class="acc-c">
+        <div class="muted" style="margin:6px 0">Selecciona cuántas: </div>
+        <div class="row">
+          <button data-n="5"  class="primary">Cargar 5</button>
+          <button data-n="10">Cargar 10</button>
+          <button data-n="20">Cargar 20</button>
+        </div>
+        <div id="prev-${t.slug}" class="muted" style="margin-top:6px"></div>
+      </div>`;
+    box.appendChild(item);
+    // Preview
+    const prev = DICT.filter(w=> (w.tags||[]).includes(t.slug)).slice(0,5).map(w=>`• ${w.term} — ${w.meaning}`).join('<br>');
+    item.querySelector(`#prev-${t.slug}`).innerHTML = prev || 'Pronto más…';
+    // Toggle
+    item.querySelector('.acc-h').onclick=()=>{
+      item.classList.toggle('open');
+    };
+    item.querySelectorAll('[data-n]').forEach(btn=>{
+      btn.onclick=async ()=>{
+        const n=+btn.dataset.n;
+        const pack = DICT.filter(w=> (w.tags||[]).includes(t.slug)).slice(0,n);
+        for (const w of pack) await addWord(w);
+        toast(`Cargadas ${pack.length} de ${t.title}`);
+      };
+    });
+  });
+}
+
+/* ====== Hotkeys ====== */
+document.addEventListener('keydown', (e)=>{
+  const k=e.key.toLowerCase();
+  if(k==='enter' && document.activeElement.closest('#appSection')){ e.preventDefault(); addWord(); }
+  if(e.ctrlKey && k==='k'){ e.preventDefault(); qs('#search').focus(); }
+  if(['1','2','3'].includes(k) && !qs('#reviewCard').classList.contains('hidden')){
+    e.preventDefault(); gradeCard(k==='1'?0:k==='2'?3:5);
+  }
+});
+
+/* ====== Auto-login ====== */
+client.auth.getSession().then(({data:{session}})=>{ if (session) onAuthed(); });
+
+/* ====== PWA SW ====== */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});
+}
+</script>
+</body>
+</html>
