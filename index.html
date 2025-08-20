@@ -1,4 +1,4 @@
-<!doctype html>
+ <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
@@ -71,12 +71,22 @@
       background:linear-gradient(90deg,var(--brand),var(--brand-2));
       -webkit-background-clip:text;background-clip:text;color:transparent
     }
-  </style>
+ /* NUEVO: bandera y crédito */
+.flag{ font-size:28px; margin-right:8px; vertical-align:-2px }
+.credits{
+  text-align:center;
+  color:#d4af37;      /* dorado */
+  font-size:12px;     /* pequeño */
+  margin:28px 0 8px;
+  opacity:.9;
+}
+ </style>
 </head>
 <body>
 
 <header>
-  <h1>📝 TalaLog</h1>
+ <h1><span class="flag" aria-label="Bandera de Filipinas">🇵🇭</span> Tagaloog</h1>
+
   <div id="userBox" class="hidden">
     <span id="userEmail" class="muted"></span>
     <button id="signOutBtn">Salir</button>
@@ -326,17 +336,27 @@
     qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
     nextCard();
   }
-  function nextCard() {
-    current = reviewQueue.shift();
-    if (!current) { qs('#reviewCard').classList.add('hidden'); alert('¡Repaso listo!'); startReview(); return; }
-    reviewed++; qs('#revPos').textContent = `${reviewed}`;
-    qs('#revTerm').textContent = current.term;
-    qs('#revHint').textContent = (current.from_lang||'Tagalog')+' → '+(current.to_lang||'Spanish');
-    qs('#revMeaning').textContent = current.meaning||'';
-    qs('#revExample').textContent = current.example||'';
-    qs('#revAnswer').classList.add('hidden');
-    qs('#reviewCard').classList.remove('hidden');
+function nextCard() {
+  current = reviewQueue.shift();
+
+  if (!current) {
+    // No hay más tarjetas → cerramos la tarjeta y avisamos UNA sola vez
+    qs('#reviewCard').classList.add('hidden');
+    qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
+    alert('¡Repaso listo!');
+    return; // 👈 importante: NO volver a llamar startReview()
   }
+
+  reviewed++;
+  qs('#revPos').textContent = `${reviewed}`;
+  qs('#revTerm').textContent = current.term;
+  qs('#revHint').textContent = (current.from_lang||'Tagalog')+' → '+(current.to_lang||'Spanish');
+  qs('#revMeaning').textContent = current.meaning||'';
+  qs('#revExample').textContent = current.example||'';
+  qs('#revAnswer').classList.add('hidden');
+  qs('#reviewCard').classList.remove('hidden');
+}
+
   function sm2(prevEase=2.5, prevInterval=0, prevReps=0, q=3){
     let EF = prevEase, reps = prevReps, I = prevInterval;
     if (q < 3) { reps = 0; I = 1; }
@@ -371,6 +391,7 @@
   /* Auto-login si ya hay sesión */
   client.auth.getSession().then(({data:{session}})=>{ if (session) onAuthed(); });
 </script>
+<footer class="credits">Gawa ni Harry</footer>
 </body>
 </html>
 
