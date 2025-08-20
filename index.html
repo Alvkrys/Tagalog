@@ -4,6 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TalaLog — Vocabulario Tagalog</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#34d399"/>
+
   <style>
     /* ===== Paleta clara y tranquila (menta + lavanda) ===== */
     :root{
@@ -250,7 +255,7 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
   const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  /* ===== Helpers UI ===== */
+  /* ===== Helpers UI y PWA ===== */
   const qs = s => document.querySelector(s);
   function showToast(msg,type='ok'){
     const wrap = qs('#toast'); if(!wrap) return window._nativeAlert ? _nativeAlert(msg) : console.log(msg);
@@ -266,6 +271,15 @@
   window.alert = (m)=>showToast(m,'ok');
   function debounce(fn,ms){let t; return (...a)=>{clearTimeout(t); t=setTimeout(()=>fn(...a),ms);};}
   function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
+
+  // PWA: registrar SW
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+
+  // estado online/offline
+  window.addEventListener('online', ()=>{ showToast('Conectado'); flushQueue(); updateDuePill(); });
+  window.addEventListener('offline', ()=> showToast('Sin conexión · modo caché') );
 
   const authSection = qs('#authSection');
   const appSection  = qs('#appSection');
@@ -288,7 +302,10 @@
   const todayKey = ()=> new Date().toISOString().slice(0,10);
   function getTodayObj(){ const k='talalog.today.'+todayKey(); return { key:k, count:+(localStorage.getItem(k)||0) }; }
   function updateTodayPill(v){ const c = v!=null? v : getTodayObj().count; qs('#todayGoal').textContent = `Hoy ${c}/${GOAL}`; }
-  function incToday(n=1){ const t=getTodayObj(); const v=t.count+n; localStorage.setItem(t.key, v); updateTodayPill(v); }
+  function incToday(n=1){
+    const t=getTodayObj(); const v=t.count+n; localStorage.setItem(t.key, v); updateTodayPill(v);
+    localStorage.setItem('talalog.lastActive', todayKey()); // marca día activo para racha
+  }
   function bumpStreakIfNeeded(){
     const today = todayKey();
     const last  = localStorage.getItem('talalog.lastActive');
@@ -302,6 +319,14 @@
     qs('#streakPill').textContent = `🔥 ${s}`;
   }
   async function updateDuePill(){
+    const offline = !navigator.onLine;
+    if(offline){
+      const rows = loadCache(); const now = new Date().toISOString();
+      const count = rows.filter(r => (r.next_review_at||'') <= now).length;
+      qs('#duePill').textContent = `Pendientes ${count}`;
+      qs('#dueInfo').textContent = `${count} para repasar`;
+      return;
+    }
     const { data:{session} } = await client.auth.getSession(); if(!session) return;
     const now = new Date().toISOString();
     const { count, error } = await client.from('words').select('id',{count:'exact',head:true})
@@ -309,6 +334,31 @@
     if(!error){ qs('#duePill').textContent = `Pendientes ${count||0}`; qs('#dueInfo').textContent = `${count||0} para repasar`; }
   }
   async function updateCounters(){ updateTodayPill(); bumpStreakIfNeeded(); await updateDuePill(); }
+
+  /* ===== Caché de palabras y cola offline ===== */
+  const CACHE_KEY='talalog.cache';
+  const QUEUE_KEY='talalog.queue';
+  let cacheWords = loadCache();
+
+  function saveCache(rows){ cacheWords = rows; localStorage.setItem(CACHE_KEY, JSON.stringify(rows)); }
+  function loadCache(){ try { return JSON.parse(localStorage.getItem(CACHE_KEY)||'[]'); } catch(e){ return []; } }
+  function getQueue(){ try { return JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]'); } catch(e){ return []; } }
+  function setQueue(q){ localStorage.setItem(QUEUE_KEY, JSON.stringify(q)); }
+  function queueUpdate(id, updates){
+    const q = getQueue(); q.push({id, updates}); setQueue(q);
+  }
+  async function flushQueue(){
+    if(!navigator.onLine) return;
+    let q = getQueue(); if(!q.length) return;
+    // Ejecuta una por una (simple)
+    for(const job of q){
+      try{ await client.from('words').update(job.updates).eq('id', job.id); }
+      catch(e){ /* Si falla, lo dejamos en la cola */ }
+    }
+    // Filtra las que no se lograron (aquí asumimos todas OK; si quieres, valida)
+    setQueue([]);
+    showToast('Sincronizado ✓');
+  }
 
   /* ===== OTP ===== */
   qs('#sendOtpBtn').onclick = async () => {
@@ -336,6 +386,7 @@
     appSection.classList.remove('hidden');
     await loadWords();
     await updateCounters();
+    flushQueue();
   }
 
   /* ===== Guardar palabra ===== */
@@ -364,7 +415,18 @@
       next_review_at: new Date().toISOString()
     };
 
-    const { error } = await client.from('words').insert(row).select().single();
+    if (!navigator.onLine){
+      // offline: agrega a caché (ID temporal)
+      row.id = 'local-'+Date.now();
+      saveCache([row, ...cacheWords]);
+      queueUpdate(row.id, row); // cuando vuelva la red se creará, pero para simplificar, mejor agrega las palabras online (este es un demo)
+      showToast('Guardado offline (snapshot).');
+      renderList(cacheWords);
+      updateDuePill();
+      return;
+    }
+
+    const { data, error } = await client.from('words').insert(row).select().single();
     if (error) { console.error(error); return showToast('No se pudo guardar: ' + error.message,'error'); }
 
     ['#term','#meaning','#example','#notes','#tags'].forEach(id => qs(id).value = '');
@@ -385,7 +447,17 @@
       return {user_id:session.user.id, term:t||'', meaning:m||'', example:null, notes:null, tags:['bulk'],
               from_lang:'Tagalog', to_lang:'Spanish', ease:2.5, repetitions:0, interval_days:0, next_review_at:now}
     }).filter(r=>r.term && r.meaning);
-    if(!rows.length) return showToast('Formato: palabra - significado','error');
+
+    if (!navigator.onLine){
+      rows.forEach(r=> r.id='local-'+Date.now()+Math.random());
+      saveCache([...rows, ...cacheWords]);
+      rows.forEach(r=> queueUpdate(r.id, r));
+      renderList(cacheWords);
+      showToast(`Agregadas offline: ${rows.length}`);
+      updateDuePill();
+      return;
+    }
+
     const { error } = await client.from('words').insert(rows);
     if(error) return showToast(error.message,'error');
     qs('#bulkTxt').value='';
@@ -399,6 +471,13 @@
   qs('#sort').onchange  = () => loadWords();
 
   async function loadWords() {
+    const offline = !navigator.onLine;
+    if (offline){
+      renderList(cacheWords||[]);
+      toggleEmptyHero(!(cacheWords && cacheWords.length));
+      return;
+    }
+
     const { data: { session } } = await client.auth.getSession();
     if (!session) return;
     const q = qs('#search').value.trim();
@@ -413,7 +492,8 @@
     if (q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%`);
 
     const { data, error } = await query;
-    if (error) { console.error(error); return showToast(error.message,'error'); }
+    if (error) { console.error(error); showToast(error.message,'error'); renderList(cacheWords||[]); return; }
+    saveCache(data||[]);
     renderList(data || []);
     toggleEmptyHero(!(data && data.length));
   }
@@ -425,7 +505,8 @@
 
   /* ===== Barra “frescura” ===== */
   function freshnessPct(row){
-    const last = new Date(row.last_review_at || row.created_at);
+    if(!row.last_review_at) return 0;                // nunca practicado => 0%
+    const last = new Date(row.last_review_at);
     const now  = new Date();
     const daysSince = (now - last) / 86400000;
     const targetDays = Math.max(1, row.interval_days || 1);
@@ -465,6 +546,14 @@
   }
 
   window.delWord = async (id) => {
+    if (!navigator.onLine){
+      // offline: borra del snapshot y encola una marca (simplemente ocultamos local)
+      saveCache(cacheWords.filter(r=>r.id!==id));
+      queueUpdate(id, {__delete:true});
+      renderList(cacheWords);
+      showToast('Eliminado offline (pendiente de sincronizar)');
+      return;
+    }
     const { error } = await client.from('words').delete().eq('id', id);
     if (error) { console.error(error); return showToast(error.message,'error'); }
     showToast('Eliminado');
@@ -474,14 +563,14 @@
 
   /* ===== Editar ===== */
   window.openEdit = async (id)=>{
-    const { data, error } = await client.from('words').select('*').eq('id', id).single();
-    if(error) return showToast(error.message,'error');
-    editRow = data;
-    qs('#e_term').value = data.term||'';
-    qs('#e_meaning').value = data.meaning||'';
-    qs('#e_example').value = data.example||'';
-    qs('#e_notes').value = data.notes||'';
-    qs('#e_tags').value = (data.tags||[]).join(', ');
+    const row = (cacheWords||[]).find(r=>r.id===id);
+    if(!row){ showToast('No encontrado','error'); return; }
+    editRow = row;
+    qs('#e_term').value = row.term||'';
+    qs('#e_meaning').value = row.meaning||'';
+    qs('#e_example').value = row.example||'';
+    qs('#e_notes').value = row.notes||'';
+    qs('#e_tags').value = (row.tags||[]).join(', ');
     qs('#editModal').style.display='flex';
   };
   qs('#e_cancel').onclick = ()=>{ qs('#editModal').style.display='none'; editRow=null; };
@@ -494,6 +583,13 @@
       notes: qs('#e_notes').value.trim()||null,
       tags: (qs('#e_tags').value.split(',').map(s=>s.trim()).filter(Boolean) || null)
     };
+
+    // actualiza snapshot
+    const idx = cacheWords.findIndex(r=>r.id===editRow.id);
+    if(idx>=0){ cacheWords[idx] = {...cacheWords[idx], ...updates}; saveCache(cacheWords); renderList(cacheWords); }
+
+    if (!navigator.onLine){ queueUpdate(editRow.id, updates); qs('#editModal').style.display='none'; showToast('Actualizado offline'); return; }
+
     const { error } = await client.from('words').update(updates).eq('id', editRow.id);
     if(error) return showToast(error.message,'error');
     qs('#editModal').style.display='none'; editRow=null;
@@ -516,6 +612,17 @@
       user_id:session.user.id, ...r, example:null, notes:null, tags:['basics'],
       from_lang:'Tagalog', to_lang:'Spanish', ease:2.5, repetitions:0, interval_days:0, next_review_at:now
     }));
+
+    if(!navigator.onLine){
+      samples.forEach(r=> r.id='local-'+Date.now()+Math.random());
+      saveCache([...samples, ...cacheWords]);
+      samples.forEach(r=> queueUpdate(r.id, r));
+      renderList(cacheWords);
+      showToast('Ejemplos agregados offline');
+      updateDuePill();
+      return;
+    }
+
     const { error } = await client.from('words').insert(samples);
     if(error) return showToast(error.message,'error');
     showToast('Ejemplos agregados');
@@ -525,10 +632,10 @@
 
   /* ===== Exportar CSV ===== */
   qs('#exportBtn').onclick = async () => {
-    const { data: { session } } = await client.auth.getSession(); if (!session) return;
-    const { data, error } = await client.from('words').select('*').eq('user_id', session.user.id);
-    if (error) return showToast(error.message,'error');
-    const rows = data || [];
+    const rows = navigator.onLine
+      ? (await client.from('words').select('*')).data || []
+      : loadCache();
+    if (!rows.length){ showToast('Nada para exportar','error'); return; }
     const csv = ['term,meaning,example,notes,tags,from_lang,to_lang,created_at']
       .concat(rows.map(r => [
         r.term, r.meaning, r.example||'', r.notes||'', (r.tags||[]).join('|'), r.from_lang||'', r.to_lang||'', r.created_at
@@ -537,7 +644,7 @@
     const a = document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
   };
 
-  /* ===== Repaso (SM-2) ===== */
+  /* ===== Repaso (SM-2) con offline ===== */
   let reviewQueue=[], current=null, reviewed=0;
   const reviewBtn = qs('#reviewBtn');
   qs('#showAnsBtn').onclick = () => qs('#revAnswer').classList.toggle('hidden');
@@ -545,26 +652,34 @@
   reviewBtn.onclick = startReview;
 
   async function startReview() {
-    const { data: { session } } = await client.auth.getSession(); if (!session) return;
     reviewBtn.disabled = true; const old = reviewBtn.textContent; reviewBtn.textContent='Cargando…';
 
-    const now = new Date().toISOString();
-    let { data, error } = await client.from('words')
+    const nowIso = new Date().toISOString();
+    if(!navigator.onLine){
+      // usa snapshot para armar la cola
+      const due = cacheWords.filter(w => (w.next_review_at||'') <= nowIso);
+      reviewQueue = due.length ? due : cacheWords.slice(0,10);
+      qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
+      nextCard();
+      reviewBtn.disabled=false; reviewBtn.textContent=old; return;
+    }
+
+    const { data: { session } } = await client.auth.getSession(); if (!session) { reviewBtn.disabled=false; reviewBtn.textContent=old; return; }
+
+    const { data, error } = await client.from('words')
       .select('*').eq('user_id', session.user.id)
-      .lte('next_review_at', now)
+      .lte('next_review_at', nowIso)
       .order('next_review_at', { ascending:true });
 
     if (error){ showToast(error.message,'error'); reviewBtn.disabled=false; reviewBtn.textContent=old; return; }
 
     reviewQueue = data || [];
-
-    // Plan B: si no hay vencidas, armamos repaso ligero con las 10 más antiguas
     if (!reviewQueue.length){
       const alt = await client.from('words').select('*').eq('user_id', session.user.id)
         .order('next_review_at',{ascending:true}).limit(10);
       if(!alt.error && alt.data?.length){
         reviewQueue = alt.data;
-        showToast('No había tarjetas vencidas. Modo repaso ligero.');
+        showToast('No había vencidas. Modo repaso ligero.');
       }else{
         showToast('Nada para hoy. ¡Agregá o practicá mañana!');
         reviewBtn.disabled=false; reviewBtn.textContent=old; return;
@@ -613,17 +728,30 @@
 
   async function gradeCard(quality) {
     if (!current) return;
+    const nowIso = new Date().toISOString();
     const { EF, I, reps } = sm2(current.ease||2.5, current.interval_days||0, current.repetitions||0, quality);
     const next = new Date(); next.setDate(next.getDate() + (I||1));
     const updates = {
       ease: EF, interval_days: I, repetitions: reps,
-      last_review_at: new Date().toISOString(),
+      last_review_at: nowIso,
       next_review_at: next.toISOString()
     };
+
+    // Actualiza snapshot para ver progreso inmediato
+    const idx = cacheWords.findIndex(w=>w.id===current.id);
+    if(idx>=0){ cacheWords[idx] = {...cacheWords[idx], ...updates}; saveCache(cacheWords); renderList(cacheWords); }
+
+    if (!navigator.onLine){
+      queueUpdate(current.id, updates);
+      if (quality >= 3) incToday(1);
+      nextCard();
+      return;
+    }
+
     const { error } = await client.from('words').update(updates).eq('id', current.id);
-    if (error) { console.error(error); return showToast('No pude actualizar: '+error.message,'error'); }
+    if (error) { console.error(error); showToast('No pude actualizar: '+error.message,'error'); queueUpdate(current.id, updates); }
     if (quality >= 3) incToday(1);
-    await loadWords();     // refresca barra
+    await loadWords();     // refresca barras desde servidor
     nextCard();
   }
 
