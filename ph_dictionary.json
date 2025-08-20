@@ -1,0 +1,14 @@
+[
+  {
+    "term": "kape",
+    "meaning": "café",
+    "example": "Gusto ko ng kape.",
+    "tags": ["basics", "restaurant"]
+  },
+  {
+    "term": "salamat",
+    "meaning": "gracias",
+    "example": "Salamat po.",
+    "tags": ["basics"]
+  }
+]
