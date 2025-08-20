@@ -22,13 +22,25 @@
       --warn:#f59e0b20;
       --due:#ef444420;
     }
+    /* ===== Modo oscuro ===== */
+    [data-theme="dark"]{
+      --bg:#0b1020;
+      --panel:#0f172a;
+      --ink:#e5e7eb;
+      --muted:#94a3b8;
+      --bd:#1f2a44;
+      --progress-bg:#1b273d;
+    }
 
+    *{box-sizing:border-box}
     body{font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);margin:24px;max-width:980px}
     header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-    input,button,textarea,select{padding:10px;border:1px solid var(--bd);border-radius:10px;margin:4px 0;background:#fff}
-    button{border:1px solid var(--bd);border-radius:10px;cursor:pointer;background:#fff}
-    button.primary{background:var(--brand);color:#fff;border-color:transparent}
-    button.primary:hover{filter:brightness(.97)}
+    input,button,textarea,select{padding:10px;border:1px solid var(--bd);border-radius:10px;margin:4px 0;background:#fff;color:#0f172a}
+    [data-theme="dark"] input,[data-theme="dark"] textarea,[data-theme="dark"] select,[data-theme="dark"] button{background:#0f172a;color:#e5e7eb;border-color:#1f2a44}
+    .btn{border:1px solid var(--bd);border-radius:10px;cursor:pointer;background:#fff}
+    .btn.primary{background:var(--brand);color:#fff;border-color:transparent}
+    .btn.ghost{background:transparent;color:var(--muted)}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
     .row{display:flex;gap:8px;flex-wrap:wrap}
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     @media(max-width:728px){.grid{grid-template-columns:1fr}}
@@ -36,6 +48,7 @@
     .right{margin-left:auto}
     .muted{color:var(--muted)}
     .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;margin-right:6px}
+    [data-theme="dark"] .chip{background:#1b273d;color:#c7d2fe}
 
     /* Tarjeta con hover suave (color complementario) */
     .card{
@@ -46,15 +59,23 @@
       padding:12px;
       margin:8px 0;
     }
+    [data-theme="dark"] .card{
+      background: radial-gradient(120% 120% at 100% 0%, rgba(167,139,250,.10), rgba(15,23,42,.92) 60%), var(--panel);
+    }
     .card:hover{
       transform: translateY(-3px);
       border-color: color-mix(in oklab, var(--brand) 40%, var(--bd));
       box-shadow: 0 10px 24px rgba(16,24,40,.08);
       background: radial-gradient(120% 120% at 100% 0%, rgba(52,211,153,.10), rgba(255,255,255,.92) 60%), var(--panel);
     }
+    [data-theme="dark"] .card:hover{
+      background: radial-gradient(120% 120% at 100% 0%, rgba(52,211,153,.10), rgba(15,23,42,.92) 60%), var(--panel);
+      box-shadow:none;
+    }
 
     /* Lista */
     .list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9}
+    [data-theme="dark"] .list-item{border-bottom-color:#1f2a44}
 
     /* Barra de progreso “frescura” */
     .progress{height:6px;background:var(--progress-bg);border-radius:999px;overflow:hidden;margin-top:6px}
@@ -65,17 +86,18 @@
     .card.is-warn{box-shadow:0 0 0 6px var(--warn) inset}
     .card.is-due{box-shadow:0 0 0 6px var(--due) inset}
 
-    /* Efecto de texto en hover (sutil) */
+    /* Texto hover */
     .list-item:hover strong{
       background:linear-gradient(90deg,var(--brand),var(--brand-2));
       -webkit-background-clip:text;background-clip:text;color:transparent
     }
 
-    /* NUEVO: bandera, HUD y crédito */
+    /* Encabezado: bandera, HUD y crédito */
     .flag{ font-size:28px; margin-right:8px; vertical-align:-2px }
     .rightbox{display:flex;align-items:center;gap:12px}
     .hud{display:flex;align-items:center;gap:8px}
-    .pill{background:#fff;border:1px solid var(--bd);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted)}
+    .pill{background:#fff;border:1px solid var(--bd);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--muted);cursor:pointer}
+    [data-theme="dark"] .pill{background:#0f172a;color:#94a3b8;border-color:#1f2a44}
 
     .credits{
       text-align:center;
@@ -88,9 +110,15 @@
     /* Toasts */
     #toast{ position:fixed; right:20px; bottom:20px; display:flex; flex-direction:column; gap:8px; z-index:9999;}
     .toast{ background:#fff; border:1px solid var(--bd); border-left:4px solid var(--brand); padding:10px 12px; border-radius:10px;
-            box-shadow:0 10px 24px rgba(16,24,40,.08); color:var(--ink); min-width:220px; transition:.3s ease;
-    }
+            box-shadow:0 10px 24px rgba(16,24,40,.08); color:#0f172a; min-width:220px; transition:.3s ease; }
     .toast.error{ border-left-color:#ef4444;}
+
+    /* Review sticky */
+    #reviewCard{ position:sticky; bottom:12px; z-index:5 }
+
+    /* Modal de edición */
+    #editModal{ position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; z-index:10000}
+    #editModal .box{ width:min(720px,96vw); }
   </style>
 </head>
 <body>
@@ -102,14 +130,15 @@
 
     <div class="rightbox">
       <div class="hud">
-        <span id="todayGoal" class="pill">Hoy 0/20</span>
+        <span id="todayGoal" class="pill" title="Click para cambiar meta diaria">Hoy 0/20</span>
         <span id="duePill" class="pill">Pendientes 0</span>
         <span id="streakPill" class="pill">🔥 0</span>
+        <button id="themeBtn" class="btn ghost" title="Cambiar tema">Tema</button>
       </div>
 
       <div id="userBox" class="hidden">
         <span id="userEmail" class="muted"></span>
-        <button id="signOutBtn">Salir</button>
+        <button id="signOutBtn" class="btn">Salir</button>
       </div>
     </div>
   </header>
@@ -119,11 +148,11 @@
     <h3>Entrá con tu correo (OTP)</h3>
     <div class="row">
       <input id="email" placeholder="tu@correo.com" style="min-width:260px">
-      <button id="sendOtpBtn">Enviar código</button>
+      <button id="sendOtpBtn" class="btn">Enviar código</button>
     </div>
     <div class="row">
       <input id="otp" placeholder="Código de 6 dígitos" style="min-width:260px">
-      <button id="verifyBtn">Verificar</button>
+      <button id="verifyBtn" class="btn">Verificar</button>
     </div>
     <p class="muted">Revisá tu inbox/spam. El código caduca pronto.</p>
   </section>
@@ -143,10 +172,18 @@
         <div class="row">
           <select id="fromLang"><option>Tagalog</option><option>English</option><option>Spanish</option></select>
           <select id="toLang"><option>Spanish</option><option>English</option></select>
-          <button class="primary" id="addBtn">Agregar</button>
-          <button id="exportBtn">Exportar CSV</button>
+          <button class="btn primary" id="addBtn">Agregar</button>
+          <button id="exportBtn" class="btn">Exportar CSV</button>
+          <button id="quickBtn" class="btn ghost" title="Entrada rápida">Entrada rápida</button>
         </div>
       </div>
+
+      <!-- Entrada rápida -->
+      <div id="bulkBox" class="hidden">
+        <textarea id="bulkTxt" rows="4" style="width:100%" placeholder="Una por línea: palabra - significado"></textarea>
+        <div class="row"><button id="bulkAdd" class="btn primary">Cargar</button><span class="muted">Ej: salamat - gracias</span></div>
+      </div>
+
       <div class="row">
         <input id="search" placeholder="Buscar..." style="flex:1">
         <select id="sort">
@@ -163,13 +200,13 @@
     <div id="emptyHero" class="card hidden" style="margin-top:12px;">
       <h3>¿Primera vez aquí?</h3>
       <p class="muted">Añadí tus primeras palabras o te cargo 5 de ejemplo.</p>
-      <button class="primary" id="addExamplesBtn">Añadir ejemplos</button>
+      <button class="btn primary" id="addExamplesBtn">Añadir ejemplos</button>
     </div>
 
     <div id="list" class="card"></div>
 
     <div class="row">
-      <button class="primary" id="reviewBtn">Repasar hoy</button>
+      <button class="btn primary" id="reviewBtn">Repasar hoy</button>
       <span id="dueInfo" class="muted"></span>
     </div>
 
@@ -177,18 +214,34 @@
       <div class="muted">Tarjeta <span id="revPos">0</span></div>
       <h2 id="revTerm" style="margin:8px 0 4px 0"></h2>
       <div id="revHint" class="muted"></div>
-      <button id="showAnsBtn">Mostrar significado</button>
+      <button id="showAnsBtn" class="btn">Mostrar significado</button>
       <div id="revAnswer" class="hidden" style="margin-top:8px">
         <strong id="revMeaning"></strong>
         <div id="revExample" class="muted" style="margin-top:4px"></div>
       </div>
       <div class="row">
-        <button data-q="0">Again</button>
-        <button data-q="3">Good</button>
-        <button data-q="5">Easy</button>
+        <button class="btn" data-q="0" title="J">Again</button>
+        <button class="btn" data-q="3" title="K">Good</button>
+        <button class="btn" data-q="5" title="L">Easy</button>
       </div>
     </div>
   </section>
+
+  <!-- Modal de edición -->
+  <div id="editModal">
+    <div class="box card">
+      <h3>Editar palabra</h3>
+      <input id="e_term" placeholder="Palabra">
+      <input id="e_meaning" placeholder="Significado">
+      <input id="e_example" placeholder="Ejemplo">
+      <input id="e_notes" placeholder="Notas">
+      <input id="e_tags" placeholder="Etiquetas coma separadas">
+      <div class="row">
+        <button id="e_save" class="btn primary">Guardar</button>
+        <button id="e_cancel" class="btn">Cancelar</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -209,10 +262,8 @@
       el.addEventListener('transitionend', ()=>el.remove(), {once:true});
     }, 2000);
   }
-  // Reemplazamos alert por toast (guardamos original por si acaso)
   const _nativeAlert = window.alert.bind(window);
   window.alert = (m)=>showToast(m,'ok');
-
   function debounce(fn,ms){let t; return (...a)=>{clearTimeout(t); t=setTimeout(()=>fn(...a),ms);};}
   function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
 
@@ -223,8 +274,17 @@
   const listEl      = qs('#list');
   const countEl     = qs('#countLabel');
 
-  /* ===== Metas & racha (localStorage) ===== */
-  const GOAL = 20;
+  /* ===== Tema ===== */
+  const themeBtn = qs('#themeBtn');
+  function setTheme(t){ document.documentElement.setAttribute('data-theme', t); localStorage.setItem('talalog.theme', t); }
+  setTheme(localStorage.getItem('talalog.theme')||'light');
+  themeBtn.onclick=()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+
+  /* ===== Metas & racha ===== */
+  let GOAL = +(localStorage.getItem('talalog.goal')||20);
+  const goalPill = qs('#todayGoal');
+  goalPill.onclick = ()=>{ const g = +prompt('Meta diaria (número):', GOAL)||GOAL; GOAL=g; localStorage.setItem('talalog.goal',g); updateTodayPill(); };
+
   const todayKey = ()=> new Date().toISOString().slice(0,10);
   function getTodayObj(){ const k='talalog.today.'+todayKey(); return { key:k, count:+(localStorage.getItem(k)||0) }; }
   function updateTodayPill(v){ const c = v!=null? v : getTodayObj().count; qs('#todayGoal').textContent = `Hoy ${c}/${GOAL}`; }
@@ -253,7 +313,7 @@
   /* ===== OTP ===== */
   qs('#sendOtpBtn').onclick = async () => {
     const email = qs('#email').value.trim();
-    if (!email) return alert('Poné tu correo');
+    if (!email) return showToast('Poné tu correo','error');
     const { error } = await client.auth.signInWithOtp({ email });
     if (error) return showToast(error.message,'error');
     showToast('Código enviado. Revisá tu email.');
@@ -313,6 +373,27 @@
     await updateCounters();
   }
 
+  /* ===== Entrada rápida ===== */
+  qs('#quickBtn').onclick = ()=> qs('#bulkBox').classList.toggle('hidden');
+  qs('#bulkAdd').onclick = async ()=>{
+    const { data:{session} } = await client.auth.getSession(); if(!session) return showToast('Iniciá sesión','error');
+    const lines = qs('#bulkTxt').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    if(!lines.length) return;
+    const now = new Date().toISOString();
+    const rows = lines.map(L=>{
+      const [t,m] = L.split(/\s*-\s*/);
+      return {user_id:session.user.id, term:t||'', meaning:m||'', example:null, notes:null, tags:['bulk'],
+              from_lang:'Tagalog', to_lang:'Spanish', ease:2.5, repetitions:0, interval_days:0, next_review_at:now}
+    }).filter(r=>r.term && r.meaning);
+    if(!rows.length) return showToast('Formato: palabra - significado','error');
+    const { error } = await client.from('words').insert(rows);
+    if(error) return showToast(error.message,'error');
+    qs('#bulkTxt').value='';
+    showToast(`Agregadas ${rows.length}`);
+    await loadWords();
+    await updateCounters();
+  };
+
   /* ===== Listar / buscar / ordenar ===== */
   qs('#search').oninput = debounce(()=>loadWords(), 250);
   qs('#sort').onchange  = () => loadWords();
@@ -352,6 +433,9 @@
     return Math.round(left * 100);
   }
 
+  // Edit modal state
+  let editRow = null;
+
   function renderList(rows) {
     countEl.textContent = `${rows.length} palabra(s)`;
     listEl.innerHTML = '';
@@ -360,7 +444,6 @@
     rows.forEach(r => {
       const pct = freshnessPct(r);
       const stateClass = pct > 60 ? 'is-ok' : pct > 25 ? 'is-warn' : 'is-due';
-
       const div = document.createElement('div');
       div.className = `list-item card ${stateClass}`;
       div.innerHTML = `
@@ -374,17 +457,48 @@
           <div>${(r.tags||[]).map(t=>`<span class="chip">${escapeHtml(t)}</span>`).join('')}</div>
         </div>
         <div class="right">
-          <button onclick="delWord('${r.id}')">Eliminar</button>
+          <button class="btn" onclick="openEdit('${r.id}')">Editar</button>
+          <button class="btn" onclick="delWord('${r.id}')">Eliminar</button>
         </div>`;
       listEl.appendChild(div);
     });
   }
+
   window.delWord = async (id) => {
     const { error } = await client.from('words').delete().eq('id', id);
     if (error) { console.error(error); return showToast(error.message,'error'); }
     showToast('Eliminado');
     await loadWords();
     await updateCounters();
+  };
+
+  /* ===== Editar ===== */
+  window.openEdit = async (id)=>{
+    const { data, error } = await client.from('words').select('*').eq('id', id).single();
+    if(error) return showToast(error.message,'error');
+    editRow = data;
+    qs('#e_term').value = data.term||'';
+    qs('#e_meaning').value = data.meaning||'';
+    qs('#e_example').value = data.example||'';
+    qs('#e_notes').value = data.notes||'';
+    qs('#e_tags').value = (data.tags||[]).join(', ');
+    qs('#editModal').style.display='flex';
+  };
+  qs('#e_cancel').onclick = ()=>{ qs('#editModal').style.display='none'; editRow=null; };
+  qs('#e_save').onclick = async ()=>{
+    if(!editRow) return;
+    const updates = {
+      term: qs('#e_term').value.trim(),
+      meaning: qs('#e_meaning').value.trim(),
+      example: qs('#e_example').value.trim()||null,
+      notes: qs('#e_notes').value.trim()||null,
+      tags: (qs('#e_tags').value.split(',').map(s=>s.trim()).filter(Boolean) || null)
+    };
+    const { error } = await client.from('words').update(updates).eq('id', editRow.id);
+    if(error) return showToast(error.message,'error');
+    qs('#editModal').style.display='none'; editRow=null;
+    showToast('Actualizado');
+    await loadWords();
   };
 
   /* ===== Vacío: añadir ejemplos ===== */
@@ -425,22 +539,43 @@
 
   /* ===== Repaso (SM-2) ===== */
   let reviewQueue=[], current=null, reviewed=0;
-  qs('#reviewBtn').onclick = startReview;
+  const reviewBtn = qs('#reviewBtn');
   qs('#showAnsBtn').onclick = () => qs('#revAnswer').classList.toggle('hidden');
   document.querySelectorAll('#reviewCard [data-q]').forEach(b=>b.onclick=()=>gradeCard(+b.dataset.q));
+  reviewBtn.onclick = startReview;
 
   async function startReview() {
     const { data: { session } } = await client.auth.getSession(); if (!session) return;
+    reviewBtn.disabled = true; const old = reviewBtn.textContent; reviewBtn.textContent='Cargando…';
+
     const now = new Date().toISOString();
-    const { data, error } = await client.from('words')
+    let { data, error } = await client.from('words')
       .select('*').eq('user_id', session.user.id)
       .lte('next_review_at', now)
       .order('next_review_at', { ascending:true });
-    if (error) return showToast(error.message,'error');
-    reviewQueue = data || []; reviewed = 0;
+
+    if (error){ showToast(error.message,'error'); reviewBtn.disabled=false; reviewBtn.textContent=old; return; }
+
+    reviewQueue = data || [];
+
+    // Plan B: si no hay vencidas, armamos repaso ligero con las 10 más antiguas
+    if (!reviewQueue.length){
+      const alt = await client.from('words').select('*').eq('user_id', session.user.id)
+        .order('next_review_at',{ascending:true}).limit(10);
+      if(!alt.error && alt.data?.length){
+        reviewQueue = alt.data;
+        showToast('No había tarjetas vencidas. Modo repaso ligero.');
+      }else{
+        showToast('Nada para hoy. ¡Agregá o practicá mañana!');
+        reviewBtn.disabled=false; reviewBtn.textContent=old; return;
+      }
+    }
+
+    reviewed = 0;
     qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
-    if (!reviewQueue.length){ showToast('Nada para hoy. ¡Agregá o prepara mañana!'); return; }
     nextCard();
+
+    reviewBtn.disabled=false; reviewBtn.textContent=old;
   }
 
   function nextCard() {
@@ -450,7 +585,7 @@
       qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
       showToast('¡Repaso listo!');
       updateCounters();
-      return; // no llamar startReview de nuevo
+      return;
     }
     reviewed++;
     qs('#revPos').textContent = `${reviewed}`;
@@ -487,9 +622,8 @@
     };
     const { error } = await client.from('words').update(updates).eq('id', current.id);
     if (error) { console.error(error); return showToast('No pude actualizar: '+error.message,'error'); }
-    // progreso diario y contadores
     if (quality >= 3) incToday(1);
-    await loadWords();
+    await loadWords();     // refresca barra
     nextCard();
   }
 
