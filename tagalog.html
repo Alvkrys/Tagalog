@@ -9,14 +9,14 @@
 <style>
 :root{
   --bg:#f7faf9;--panel:#ffffff;--ink:#0f172a;--muted:#64748b;--bd:#e5e7eb;
-  --brand:#34d399;--brand2:#a78bfa;
-  --danger:#ef4444;--warn:#f59e0b;--ok:#22c55e;
+  --brand:#34d399;--brand2:#a78bfa; --danger:#ef4444;--warn:#f59e0b;--ok:#22c55e;
 }
 [data-theme="dark"]{
   --bg:#0b1020;--panel:#121a2b;--ink:#e5f0ff;--muted:#8aa0c2;--bd:#22304b;
   --brand:#38d39f;--brand2:#8b7af5;
 }
-*{box-sizing:border-box} body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+*{box-sizing:border-box} body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;background:var(--bg);color:var(--ink)}
+[hidden]{display:none!important} /* <- NUEVO: oculta con prioridad */
 .wrap{max-width:1060px;margin:0 auto;padding:16px}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
 h1{margin:0;font-size:22px;display:flex;align-items:center;gap:8px}
@@ -28,15 +28,13 @@ h1{margin:0;font-size:22px;display:flex;align-items:center;gap:8px}
 input,select,textarea{padding:10px;border:1px solid var(--bd);border-radius:10px;width:100%}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .muted{color:var(--muted)}
-.hidden{display:none}
 .badge{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-right:6px}
 .right{margin-left:auto}
 .progress{height:6px;background:#e8eef1;border-radius:999px;overflow:hidden;margin-top:6px}
 .progress>i{display:block;height:100%;width:var(--pct,0%);background:linear-gradient(90deg,var(--brand),var(--brand2));transition:width .4s ease}
 .list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f7}
-.actions .btn-danger{border-color:var(--danger);color:var(--danger)}
 /* Review modal */
-#reviewCard{position:fixed;inset:0;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;padding:16px}
+#reviewCard{position:fixed;inset:0;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;padding:16px}
 #reviewBox{max-width:720px;width:100%;background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:16px}
 #front{font-size:28px;text-align:center;margin:12px 0}
 #back{font-size:18px;text-align:center;margin:10px 0}
@@ -52,7 +50,7 @@ footer{margin:16px 0;text-align:center;color:#d4af37;font-size:12px}
   <header>
     <h1><span aria-hidden="true">🇵🇭</span> Tagalog</h1>
     <div class="row">
-      <span id="streakBox" class="muted">Racha: 🔥 <b id="streakNum">0</b></span>
+      <span class="muted">Racha: 🔥 <b id="streakNum">0</b></span>
       <button id="resetStreakBtn" class="btn">Reiniciar</button>
       <button id="themeBtn" class="btn">Tema</button>
       <span id="userEmail" class="muted"></span>
@@ -93,11 +91,15 @@ footer{margin:16px 0;text-align:center;color:#d4af37;font-size:12px}
     </div>
   </section>
 
-  <!-- Onboarding -->
+  <!-- Onboarding + Importador -->
   <section class="card" id="welcome">
     <h3>¿Primera vez aquí?</h3>
-    <p class="muted">Añadí tus primeras palabras o te cargo 5 de ejemplo.</p>
-    <button class="btn" id="seedBtn">Añadir ejemplos</button>
+    <p class="muted">Añadí tus primeras palabras, o importa un paquete.</p>
+    <div class="row">
+      <button class="btn" id="seedBtn">Añadir ejemplos</button>
+      <button class="btn" id="load1000Btn">Cargar 1000</button>
+      <button class="btn" id="loadCustomBtn">Cargar paquete…</button>
+    </div>
   </section>
 
   <!-- Lista -->
@@ -118,8 +120,8 @@ footer{margin:16px 0;text-align:center;color:#d4af37;font-size:12px}
   <footer>Gawa ni Harry</footer>
 </div>
 
-<!-- Modal de review -->
-<div id="reviewCard" class="hidden">
+<!-- Modal de review: AHORA arranca oculto con hidden -->
+<div id="reviewCard" hidden aria-modal="true" role="dialog">
   <div id="reviewBox">
     <div class="row" style="justify-content:space-between">
       <div class="muted">Tarjeta <span id="revPos">0</span></div>
@@ -127,7 +129,7 @@ footer{margin:16px 0;text-align:center;color:#d4af37;font-size:12px}
     </div>
     <div id="front">—</div>
     <button class="btn" id="showAnsBtn" style="display:block;margin:0 auto">Mostrar significado</button>
-    <div id="back" class="hidden">
+    <div id="back" hidden>
       <strong id="revMeaning"></strong>
       <div id="revExample" class="muted" style="margin-top:6px"></div>
     </div>
@@ -150,10 +152,23 @@ document.getElementById('themeBtn').onclick = ()=>{
 };
 root.setAttribute('data-theme', localStorage.getItem('theme')||'light');
 
-/* === Supabase (tus claves reales) === */
+/* === Supabase === */
 const SUPABASE_URL      = "https://wszrttutzsmzayzpbnjq.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* === Guard: si no hay sesión vuelve a index === */
+client.auth.getSession().then(async ({data:{session}})=>{
+  if(!session){ location.href='index.html'; return; }
+  const { data:{user} } = await client.auth.getUser();
+  document.getElementById('userEmail').textContent = user.email;
+  await refreshToday();
+  await loadWords();
+  closeReview(); // <- Fuerza cerrado por las dudas
+});
+
+/* === Sign out === */
+document.getElementById('signOutBtn').onclick = async ()=>{ await client.auth.signOut(); location.href='index.html'; };
 
 /* === UI refs === */
 const qs = s => document.querySelector(s);
@@ -161,29 +176,15 @@ const listEl   = qs('#list');
 const countEl  = qs('#countLabel');
 const welcome  = qs('#welcome');
 const streakEl = qs('#streakNum');
-const userEmailEl = qs('#userEmail');
-
-/* === Session guard: si no hay sesión, vuelve a index === */
-client.auth.getSession().then(async ({data:{session}})=>{
-  if(!session){ location.href='index.html'; return; }
-  const { data:{user} } = await client.auth.getUser();
-  userEmailEl.textContent = user.email;
-  await refreshToday();
-  await loadWords();
-});
-
-/* === Sign out === */
-qs('#signOutBtn').onclick = async ()=>{ await client.auth.signOut(); location.href='index.html'; };
 
 /* === Agregar palabra === */
 qs('#addBtn').onclick = addWord;
 qs('#parseBtn').onclick = ()=>{
   const t = qs('#quick').value.trim();
-  // formato: term | meaning | tags | example
   const parts = t.split('|').map(s=>s.trim());
-  qs('#term').value = parts[0]||'';
+  qs('#term').value    = parts[0]||'';
   qs('#meaning').value = parts[1]||'';
-  qs('#tags').value = parts[2]||'';
+  qs('#tags').value    = parts[2]||'';
   qs('#example').value = parts[3]||'';
 };
 
@@ -213,7 +214,7 @@ async function addWord(){
 
 /* === Buscar / Ordenar === */
 qs('#search').oninput = ()=>loadWords();
-qs('#sort').onchange = ()=>loadWords();
+qs('#sort').onchange  = ()=>loadWords();
 
 async function loadWords(){
   const { data:{session} } = await client.auth.getSession();
@@ -256,8 +257,8 @@ function renderList(rows){
         ${escapeHtml(r.meaning||'')}
         <div>${(r.tags||[]).map(t=>`<span class="badge">${escapeHtml(t)}</span>`).join('')}</div>
       </div>
-      <div class="actions right">
-        <button class="btn btn-danger" data-del="${r.id}">Eliminar</button>
+      <div class="right">
+        <button class="btn" data-del="${r.id}">Eliminar</button>
       </div>`;
     listEl.appendChild(div);
   });
@@ -284,7 +285,7 @@ qs('#exportBtn').onclick = async ()=>{
   const a = document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
 };
 
-/* === Semillas === */
+/* === Semillas rápidas === */
 qs('#seedBtn').onclick = async ()=>{
   const { data:{session} } = await client.auth.getSession();
   const base = [
@@ -296,19 +297,58 @@ qs('#seedBtn').onclick = async ()=>{
   ];
   const rows = base.map(r=>({
     user_id:session.user.id, from_lang:'Tagalog', to_lang:'Spanish',
-    ease:2.5,repetitions:0,interval_days:0,next_review_at:new Date().toISOString(),
-    ...r
+    ease:2.5,repetitions:0,interval_days:0,next_review_at:new Date().toISOString(), ...r
   }));
   const { error } = await client.from('words').insert(rows);
   if(error) alert(error.message); else loadWords();
 };
 
-/* === Review (SM-2) === */
-let reviewQueue=[], current=null, reviewed=0;
+/* === Importador de paquetes JSON === */
+async function insertBatch(rows){
+  if(!rows.length) return;
+  const { data:{session} } = await client.auth.getSession();
+  const ready = rows.map(r=>({
+    user_id: session.user.id,
+    term: r.term,
+    meaning: r.meaning,
+    example: r.example || null,
+    tags: r.tags || null,
+    from_lang: 'Tagalog',
+    to_lang:   'Spanish',
+    ease: 2.5, repetitions: 0, interval_days: 0,
+    last_review_at: null,
+    next_review_at: new Date().toISOString()
+  }));
+  const { error } = await client.from('words').insert(ready);
+  if(error) throw error;
+}
+async function loadPackage(url){
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('No pude leer el paquete: '+url);
+  const items = await res.json();
+  for(let i=0;i<items.length;i+=100){ await insertBatch(items.slice(i,i+100)); }
+  await loadWords(); await refreshToday();
+  alert('Paquete cargado: '+items.length+' palabras');
+}
+document.getElementById('load1000Btn').onclick = async ()=>{ try{ await loadPackage('packages/tagalog-1000.json'); }catch(e){ alert(e.message); } };
+document.getElementById('loadCustomBtn').onclick = async ()=>{
+  const url = prompt('Pegá la URL del paquete JSON (ej: packages/otro.json)'); if(!url) return;
+  try{ await loadPackage(url); }catch(e){ alert(e.message); }
+};
 
-qs('#reviewBtn').onclick = startReview;
-qs('#showAnsBtn').onclick = ()=> qs('#back').classList.toggle('hidden');
-qs('#closeReview').onclick = closeReview;
+/* === Review (flash cards) === */
+let reviewQueue=[], current=null, reviewed=0;
+const reviewCard = document.getElementById('reviewCard');
+const backBox    = document.getElementById('back');
+
+function openReview(){ reviewCard.hidden = false; }
+function closeReview(){ reviewCard.hidden = true; }          // <- NUEVO
+document.getElementById('closeReview').onclick = closeReview; // <- NUEVO
+reviewCard.addEventListener('click', e=>{ if(e.target===reviewCard) closeReview(); }); // click afuera
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeReview(); });      // Esc
+
+document.getElementById('reviewBtn').onclick = startReview;
+document.getElementById('showAnsBtn').onclick = ()=>{ backBox.hidden = !backBox.hidden };
 document.querySelectorAll('.quality [data-q]').forEach(b=>b.onclick=()=>gradeCard(+b.dataset.q));
 
 async function startReview(){
@@ -317,7 +357,6 @@ async function startReview(){
   let q = client.from('words').select('*').eq('user_id', session.user.id);
 
   if(mode==='hard'){
-    // difíciles = baja frescura o baja facilidad
     const { data } = await q.order('ease',{ascending:true}).limit(150);
     reviewQueue = (data||[]).filter(r=>freshnessPct(r)<40).slice(0,15);
   }else{
@@ -330,45 +369,32 @@ async function startReview(){
   reviewed=0;
   qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
   if(reviewQueue.length===0){ alert('No hay tarjetas vencidas.'); return; }
-  openReview();
-  nextCard();
+  openReview(); nextCard();
 }
-
-function openReview(){ qs('#reviewCard').classList.remove('hidden'); }
-function closeReview(){ qs('#reviewCard').classList.add('hidden'); }
 
 function nextCard(){
   current = reviewQueue.shift();
   if(!current){
-    closeReview();
-    bumpStreak();    // sube racha al terminar sesión
-    refreshToday();  // actualiza contadores
-    loadWords();     // refresca barras
-    alert('¡Repaso listo!');
-    return;
+    closeReview(); bumpStreak(); refreshToday(); loadWords(); alert('¡Repaso listo!'); return;
   }
   reviewed++;
   qs('#revPos').textContent = `${reviewed}`;
   qs('#front').textContent = current.term;
   qs('#revMeaning').textContent = current.meaning||'';
   qs('#revExample').textContent = current.example||'';
-  qs('#back').classList.add('hidden');
+  backBox.hidden = true; // siempre oculta el reverso al mostrar una nueva
 }
 
 function sm2(prevEase=2.5, prevInterval=0, prevReps=0, q=3){
   let EF=prevEase, reps=prevReps, I=prevInterval;
   if(q<3){ reps=0; I=1; }
   else{
-    if(reps===0) I=1;
-    else if(reps===1) I=6;
-    else I=Math.round(I*EF);
+    if(reps===0) I=1; else if(reps===1) I=6; else I=Math.round(I*EF);
     reps += 1;
     EF = EF + (0.1 - (5 - q)*(0.08 + (5 - q)*0.02));
     if(EF<1.3) EF=1.3;
-  }
-  return { EF, I, reps };
+  } return { EF, I, reps };
 }
-
 async function gradeCard(quality){
   if(!current) return;
   const { EF,I,reps } = sm2(current.ease||2.5, current.interval_days||0, current.repetitions||0, quality);
@@ -381,44 +407,37 @@ async function gradeCard(quality){
 
 /* === Contadores y racha === */
 async function refreshToday(){
-  // pendientes = tarjetas con next_review_at <= ahora
   const { data:{session} } = await client.auth.getSession();
   const now = new Date().toISOString();
   const { data, error } = await client.from('words').select('id').eq('user_id', session.user.id).lte('next_review_at', now);
   if(!error) qs('#dueInfo').textContent = `${(data||[]).length} para repasar`;
-  streakEl.textContent = getStreak();
+  document.getElementById('streakNum').textContent = getStreak();
 }
-
 function getStreak(){
   const k='talalog-streak', d='talalog-last';
   const today = new Date().toDateString();
   const last = localStorage.getItem(d);
   const n = Number(localStorage.getItem(k)||0);
-  if(last===today) return n;
-  return n; // aún no se ha sumado hoy
+  return last===today ? n : n;
 }
-
 function bumpStreak(){
   const k='talalog-streak', d='talalog-last';
   const today = new Date().toDateString();
   const last = localStorage.getItem(d);
   let n = Number(localStorage.getItem(k)||0);
-  if(last!==today){ // solo una subida por día
-    n += 1;
-    localStorage.setItem(k, String(n));
-    localStorage.setItem(d, today);
-  }
-  streakEl.textContent = n;
+  if(last!==today){ n+=1; localStorage.setItem(k,String(n)); localStorage.setItem(d,today); }
+  document.getElementById('streakNum').textContent = n;
 }
-
-qs('#resetStreakBtn').onclick = ()=>{
-  localStorage.setItem('talalog-streak','0');
-  localStorage.removeItem('talalog-last');
-  streakEl.textContent='0';
+document.getElementById('resetStreakBtn').onclick = ()=>{
+  localStorage.setItem('talalog-streak','0'); localStorage.removeItem('talalog-last');
+  document.getElementById('streakNum').textContent='0';
 };
 
 /* === utils === */
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+/* === Registrar SW === */
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
 </html>
