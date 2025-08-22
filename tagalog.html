@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TalaLog · Tagalog</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#34d399">
+<style>
+:root{
+  --bg:#f7faf9;--panel:#ffffff;--ink:#0f172a;--muted:#64748b;--bd:#e5e7eb;
+  --brand:#34d399;--brand2:#a78bfa;
+  --danger:#ef4444;--warn:#f59e0b;--ok:#22c55e;
+}
+[data-theme="dark"]{
+  --bg:#0b1020;--panel:#121a2b;--ink:#e5f0ff;--muted:#8aa0c2;--bd:#22304b;
+  --brand:#38d39f;--brand2:#8b7af5;
+}
+*{box-sizing:border-box} body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:1060px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+h1{margin:0;font-size:22px;display:flex;align-items:center;gap:8px}
+.btn{border:1px solid var(--bd);background:#fff;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
+[data-theme="dark"] .btn{background:#16233c}
+.card{background:radial-gradient(120% 120% at 100% 0%, rgba(167,139,250,.10), rgba(255,255,255,.92) 60%), var(--panel);border:1px solid var(--bd);border-radius:12px;padding:12px;margin:8px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+input,select,textarea{padding:10px;border:1px solid var(--bd);border-radius:10px;width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted)}
+.hidden{display:none}
+.badge{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-right:6px}
+.right{margin-left:auto}
+.progress{height:6px;background:#e8eef1;border-radius:999px;overflow:hidden;margin-top:6px}
+.progress>i{display:block;height:100%;width:var(--pct,0%);background:linear-gradient(90deg,var(--brand),var(--brand2));transition:width .4s ease}
+.list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f7}
+.actions .btn-danger{border-color:var(--danger);color:var(--danger)}
+/* Review modal */
+#reviewCard{position:fixed;inset:0;background:rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;padding:16px}
+#reviewBox{max-width:720px;width:100%;background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:16px}
+#front{font-size:28px;text-align:center;margin:12px 0}
+#back{font-size:18px;text-align:center;margin:10px 0}
+.quality .btn{min-width:110px}
+.btn-ok{background:var(--ok);color:#fff;border:0}
+.btn-warn{background:var(--warn);color:#fff;border:0}
+.btn-bad{background:var(--danger);color:#fff;border:0}
+footer{margin:16px 0;text-align:center;color:#d4af37;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span aria-hidden="true">🇵🇭</span> Tagalog</h1>
+    <div class="row">
+      <span id="streakBox" class="muted">Racha: 🔥 <b id="streakNum">0</b></span>
+      <button id="resetStreakBtn" class="btn">Reiniciar</button>
+      <button id="themeBtn" class="btn">Tema</button>
+      <span id="userEmail" class="muted"></span>
+      <button id="signOutBtn" class="btn">Salir</button>
+    </div>
+  </header>
+
+  <!-- Agregar palabra -->
+  <section class="card">
+    <h3 style="margin:6px 0">Agregar palabra</h3>
+    <div class="grid">
+      <input id="term"    placeholder="Palabra en Tagalog *">
+      <input id="meaning" placeholder="Significado (ES/EN)">
+      <input id="example" placeholder="Ejemplo de uso">
+      <input id="tags"    placeholder="Etiquetas: saludo,verbo (coma separadas)">
+    </div>
+    <div class="grid">
+      <div class="row">
+        <select id="fromLang"><option>Tagalog</option><option>English</option><option>Spanish</option></select>
+        <select id="toLang"><option>Spanish</option><option>English</option></select>
+        <button class="btn" id="addBtn">Agregar</button>
+        <button class="btn" id="exportBtn">Exportar CSV</button>
+      </div>
+      <div class="row">
+        <input id="quick" placeholder="Entrada rápida: kape | café | saludo,comida | ejemplo">
+        <button class="btn" id="parseBtn">Parsear</button>
+      </div>
+    </div>
+    <div class="row">
+      <input id="search" placeholder="Buscar..." style="flex:1">
+      <select id="sort">
+        <option value="created_at.desc">Recientes primero</option>
+        <option value="term.asc">A–Z</option>
+        <option value="term.desc">Z–A</option>
+        <option value="updated_at.desc">Editadas reciente</option>
+      </select>
+      <span class="muted" id="countLabel">0 palabra(s)</span>
+    </div>
+  </section>
+
+  <!-- Onboarding -->
+  <section class="card" id="welcome">
+    <h3>¿Primera vez aquí?</h3>
+    <p class="muted">Añadí tus primeras palabras o te cargo 5 de ejemplo.</p>
+    <button class="btn" id="seedBtn">Añadir ejemplos</button>
+  </section>
+
+  <!-- Lista -->
+  <section id="list" class="card"></section>
+
+  <!-- Repaso -->
+  <section class="row" style="align-items:center;margin-top:6px">
+    <button class="btn" id="reviewBtn">Repasar hoy</button>
+    <select id="reviewCount">
+      <option value="5">5</option>
+      <option value="10">10</option>
+      <option value="15">15</option>
+      <option value="hard">Difíciles</option>
+    </select>
+    <span id="dueInfo" class="muted">0 para repasar</span>
+  </section>
+
+  <footer>Gawa ni Harry</footer>
+</div>
+
+<!-- Modal de review -->
+<div id="reviewCard" class="hidden">
+  <div id="reviewBox">
+    <div class="row" style="justify-content:space-between">
+      <div class="muted">Tarjeta <span id="revPos">0</span></div>
+      <button class="btn" id="closeReview">Cerrar</button>
+    </div>
+    <div id="front">—</div>
+    <button class="btn" id="showAnsBtn" style="display:block;margin:0 auto">Mostrar significado</button>
+    <div id="back" class="hidden">
+      <strong id="revMeaning"></strong>
+      <div id="revExample" class="muted" style="margin-top:6px"></div>
+    </div>
+    <div class="row quality" style="justify-content:center;margin-top:8px">
+      <button class="btn btn-bad"  data-q="0">Difícil</button>
+      <button class="btn btn-warn" data-q="3">Regular</button>
+      <button class="btn btn-ok"   data-q="5">Fácil</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* === Tema === */
+const root = document.documentElement;
+document.getElementById('themeBtn').onclick = ()=>{
+  const t = root.getAttribute('data-theme')==='dark'?'light':'dark';
+  root.setAttribute('data-theme', t);
+  localStorage.setItem('theme', t);
+};
+root.setAttribute('data-theme', localStorage.getItem('theme')||'light');
+
+/* === Supabase (tus claves reales) === */
+const SUPABASE_URL      = "https://wszrttutzsmzayzpbnjq.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* === UI refs === */
+const qs = s => document.querySelector(s);
+const listEl   = qs('#list');
+const countEl  = qs('#countLabel');
+const welcome  = qs('#welcome');
+const streakEl = qs('#streakNum');
+const userEmailEl = qs('#userEmail');
+
+/* === Session guard: si no hay sesión, vuelve a index === */
+client.auth.getSession().then(async ({data:{session}})=>{
+  if(!session){ location.href='index.html'; return; }
+  const { data:{user} } = await client.auth.getUser();
+  userEmailEl.textContent = user.email;
+  await refreshToday();
+  await loadWords();
+});
+
+/* === Sign out === */
+qs('#signOutBtn').onclick = async ()=>{ await client.auth.signOut(); location.href='index.html'; };
+
+/* === Agregar palabra === */
+qs('#addBtn').onclick = addWord;
+qs('#parseBtn').onclick = ()=>{
+  const t = qs('#quick').value.trim();
+  // formato: term | meaning | tags | example
+  const parts = t.split('|').map(s=>s.trim());
+  qs('#term').value = parts[0]||'';
+  qs('#meaning').value = parts[1]||'';
+  qs('#tags').value = parts[2]||'';
+  qs('#example').value = parts[3]||'';
+};
+
+async function addWord(){
+  const term     = qs('#term').value.trim();
+  const meaning  = qs('#meaning').value.trim();
+  if(!term || !meaning) return alert('Palabra y significado son obligatorios');
+  const example  = qs('#example').value.trim();
+  const tags     = (qs('#tags').value.trim()||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const fromLang = qs('#fromLang').value;
+  const toLang   = qs('#toLang').value;
+
+  const { data:{session} } = await client.auth.getSession();
+  const row = {
+    user_id: session.user.id,
+    term, meaning, example: example||null, tags: tags.length?tags:null,
+    from_lang: fromLang, to_lang: toLang,
+    ease: 2.5, repetitions: 0, interval_days: 0,
+    last_review_at: null,
+    next_review_at: new Date().toISOString()
+  };
+  const { error } = await client.from('words').insert(row);
+  if(error){ console.error(error); return alert(error.message); }
+  ['#term','#meaning','#example','#tags','#quick'].forEach(id=>qs(id).value='');
+  await loadWords();
+}
+
+/* === Buscar / Ordenar === */
+qs('#search').oninput = ()=>loadWords();
+qs('#sort').onchange = ()=>loadWords();
+
+async function loadWords(){
+  const { data:{session} } = await client.auth.getSession();
+  if(!session) return;
+  const q = qs('#search').value.trim();
+  const [col,dir] = (qs('#sort').value||'created_at.desc').split('.');
+  let query = client.from('words').select('*').eq('user_id', session.user.id).order(col,{ascending:dir!=='desc'}).limit(500);
+  if(q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%`);
+  const { data, error } = await query;
+  if(error){ console.error(error); return; }
+  renderList(data||[]);
+}
+
+function freshnessPct(row){
+  const last = new Date(row.last_review_at || row.created_at);
+  const now  = new Date();
+  const daysSince = (now-last)/86400000;
+  const target = Math.max(1, row.interval_days||1);
+  const left = Math.max(0, 1 - (daysSince/target));
+  return Math.round(left*100);
+}
+
+function renderList(rows){
+  countEl.textContent = `${rows.length} palabra(s)`;
+  listEl.innerHTML = '';
+  welcome.style.display = rows.length? 'none':'block';
+  if(!rows.length){ listEl.innerHTML='<div class="muted">No hay resultados. Agregá tu primera palabra 🫰</div>'; return; }
+
+  rows.forEach(r=>{
+    const pct = freshnessPct(r);
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.innerHTML = `
+      <div>
+        <strong>${escapeHtml(r.term)}</strong>
+        <div class="muted">${escapeHtml(r.example||'')}</div>
+        <div class="progress"><i style="--pct:${pct}%"></i></div>
+      </div>
+      <div>
+        ${escapeHtml(r.meaning||'')}
+        <div>${(r.tags||[]).map(t=>`<span class="badge">${escapeHtml(t)}</span>`).join('')}</div>
+      </div>
+      <div class="actions right">
+        <button class="btn btn-danger" data-del="${r.id}">Eliminar</button>
+      </div>`;
+    listEl.appendChild(div);
+  });
+
+  listEl.querySelectorAll('[data-del]').forEach(b=>b.onclick=async ()=>{
+    const id = b.getAttribute('data-del');
+    const { error } = await client.from('words').delete().eq('id', id);
+    if(error) alert(error.message); else loadWords();
+  });
+}
+
+/* === Exportar CSV === */
+qs('#exportBtn').onclick = async ()=>{
+  const { data:{session} } = await client.auth.getSession();
+  const { data, error } = await client.from('words').select('*').eq('user_id', session.user.id);
+  if(error){ alert(error.message); return; }
+  const rows = data||[];
+  const csv = ['term,meaning,example,notes,tags,from_lang,to_lang,created_at']
+    .concat(rows.map(r=>[
+      r.term,r.meaning,r.example||'',r.notes||'',(r.tags||[]).join('|'),r.from_lang||'',r.to_lang||'',r.created_at
+    ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
+};
+
+/* === Semillas === */
+qs('#seedBtn').onclick = async ()=>{
+  const { data:{session} } = await client.auth.getSession();
+  const base = [
+    {term:'salamat', meaning:'gracias', example:'Salamat po.', tags:['basics']},
+    {term:'kape', meaning:'café', example:'Gusto ko ng kape.', tags:['basics','restaurant']},
+    {term:'tubig', meaning:'agua', tags:['basics']},
+    {term:'oo', meaning:'sí', tags:['basics']},
+    {term:'hindi', meaning:'no', tags:['basics']}
+  ];
+  const rows = base.map(r=>({
+    user_id:session.user.id, from_lang:'Tagalog', to_lang:'Spanish',
+    ease:2.5,repetitions:0,interval_days:0,next_review_at:new Date().toISOString(),
+    ...r
+  }));
+  const { error } = await client.from('words').insert(rows);
+  if(error) alert(error.message); else loadWords();
+};
+
+/* === Review (SM-2) === */
+let reviewQueue=[], current=null, reviewed=0;
+
+qs('#reviewBtn').onclick = startReview;
+qs('#showAnsBtn').onclick = ()=> qs('#back').classList.toggle('hidden');
+qs('#closeReview').onclick = closeReview;
+document.querySelectorAll('.quality [data-q]').forEach(b=>b.onclick=()=>gradeCard(+b.dataset.q));
+
+async function startReview(){
+  const mode = qs('#reviewCount').value;
+  const { data:{session} } = await client.auth.getSession();
+  let q = client.from('words').select('*').eq('user_id', session.user.id);
+
+  if(mode==='hard'){
+    // difíciles = baja frescura o baja facilidad
+    const { data } = await q.order('ease',{ascending:true}).limit(150);
+    reviewQueue = (data||[]).filter(r=>freshnessPct(r)<40).slice(0,15);
+  }else{
+    const now = new Date().toISOString();
+    const limit = Number(mode)||5;
+    const { data } = await q.lte('next_review_at', now).order('next_review_at',{ascending:true}).limit(limit);
+    reviewQueue = data||[];
+  }
+
+  reviewed=0;
+  qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
+  if(reviewQueue.length===0){ alert('No hay tarjetas vencidas.'); return; }
+  openReview();
+  nextCard();
+}
+
+function openReview(){ qs('#reviewCard').classList.remove('hidden'); }
+function closeReview(){ qs('#reviewCard').classList.add('hidden'); }
+
+function nextCard(){
+  current = reviewQueue.shift();
+  if(!current){
+    closeReview();
+    bumpStreak();    // sube racha al terminar sesión
+    refreshToday();  // actualiza contadores
+    loadWords();     // refresca barras
+    alert('¡Repaso listo!');
+    return;
+  }
+  reviewed++;
+  qs('#revPos').textContent = `${reviewed}`;
+  qs('#front').textContent = current.term;
+  qs('#revMeaning').textContent = current.meaning||'';
+  qs('#revExample').textContent = current.example||'';
+  qs('#back').classList.add('hidden');
+}
+
+function sm2(prevEase=2.5, prevInterval=0, prevReps=0, q=3){
+  let EF=prevEase, reps=prevReps, I=prevInterval;
+  if(q<3){ reps=0; I=1; }
+  else{
+    if(reps===0) I=1;
+    else if(reps===1) I=6;
+    else I=Math.round(I*EF);
+    reps += 1;
+    EF = EF + (0.1 - (5 - q)*(0.08 + (5 - q)*0.02));
+    if(EF<1.3) EF=1.3;
+  }
+  return { EF, I, reps };
+}
+
+async function gradeCard(quality){
+  if(!current) return;
+  const { EF,I,reps } = sm2(current.ease||2.5, current.interval_days||0, current.repetitions||0, quality);
+  const next = new Date(); next.setDate(next.getDate() + (I||1));
+  const updates = { ease:EF, interval_days:I, repetitions:reps, last_review_at:new Date().toISOString(), next_review_at: next.toISOString() };
+  const { error } = await client.from('words').update(updates).eq('id', current.id);
+  if(error){ alert(error.message); return; }
+  nextCard();
+}
+
+/* === Contadores y racha === */
+async function refreshToday(){
+  // pendientes = tarjetas con next_review_at <= ahora
+  const { data:{session} } = await client.auth.getSession();
+  const now = new Date().toISOString();
+  const { data, error } = await client.from('words').select('id').eq('user_id', session.user.id).lte('next_review_at', now);
+  if(!error) qs('#dueInfo').textContent = `${(data||[]).length} para repasar`;
+  streakEl.textContent = getStreak();
+}
+
+function getStreak(){
+  const k='talalog-streak', d='talalog-last';
+  const today = new Date().toDateString();
+  const last = localStorage.getItem(d);
+  const n = Number(localStorage.getItem(k)||0);
+  if(last===today) return n;
+  return n; // aún no se ha sumado hoy
+}
+
+function bumpStreak(){
+  const k='talalog-streak', d='talalog-last';
+  const today = new Date().toDateString();
+  const last = localStorage.getItem(d);
+  let n = Number(localStorage.getItem(k)||0);
+  if(last!==today){ // solo una subida por día
+    n += 1;
+    localStorage.setItem(k, String(n));
+    localStorage.setItem(d, today);
+  }
+  streakEl.textContent = n;
+}
+
+qs('#resetStreakBtn').onclick = ()=>{
+  localStorage.setItem('talalog-streak','0');
+  localStorage.removeItem('talalog-last');
+  streakEl.textContent='0';
+};
+
+/* === utils === */
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+</script>
+</body>
+</html>
