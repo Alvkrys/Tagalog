@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TalaLog · Elige idioma</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#34d399">
+  <style>
+    :root{
+      --bg:#f7faf9;--panel:#ffffff;--ink:#0f172a;--muted:#64748b;--bd:#e5e7eb;
+      --brand:#34d399;--brand2:#a78bfa;
+    }
+    [data-theme="dark"]{
+      --bg:#0b1020;--panel:#121a2b;--ink:#e5f0ff;--muted:#8aa0c2;--bd:#22304b;
+      --brand:#38d39f;--brand2:#8b7af5;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:960px;margin:0 auto;padding:24px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .btn{border:1px solid var(--bd);background:#fff;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
+    [data-theme="dark"] .btn{background:#16233c}
+    h1{font-size:24px;margin:0}
+    .card{background:radial-gradient(120% 120% at 100% 0%, rgba(167,139,250,.10), rgba(255,255,255,.92) 60%), var(--panel);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:12px 0}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    input{width:320px;max-width:100%;padding:10px;border:1px solid var(--bd);border-radius:10px}
+    .flags{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:16px;margin-top:8px}
+    .flag{display:flex;flex-direction:column;align-items:center;gap:8px;justify-content:center;border:1px solid var(--bd);border-radius:12px;padding:20px;background:var(--panel);cursor:pointer;transition:.2s;text-decoration:none;color:var(--ink)}
+    .flag:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(16,24,40,.08)}
+    .flag span{font-size:48px}
+    .muted{color:var(--muted)}
+    .hidden{display:none}
+    footer{margin:24px 0;text-align:center;color:#d4af37;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>TalaLog</h1>
+      <div class="row">
+        <button id="themeBtn" class="btn">Tema</button>
+        <button id="signOutBtn" class="btn hidden">Salir</button>
+      </div>
+    </header>
+
+    <!-- LOGIN -->
+    <section id="authBox" class="card">
+      <h2>Entrá con tu correo (OTP)</h2>
+      <div class="row">
+        <input id="email" placeholder="tu@correo.com" autocomplete="email">
+        <button class="btn" id="sendOtpBtn">Enviar código</button>
+      </div>
+      <div class="row">
+        <input id="otp" placeholder="Código de 6 dígitos" inputmode="numeric">
+        <button class="btn" id="verifyBtn">Verificar</button>
+      </div>
+      <p class="muted">Revisá tu inbox/spam. El código caduca pronto.</p>
+    </section>
+
+    <!-- SELECCIÓN DE IDIOMA (aparece solo si hay sesión) -->
+    <section id="langBox" class="card hidden">
+      <div class="row" style="align-items:center;justify-content:space-between">
+        <h2 style="margin:0">Elegí un idioma</h2>
+        <span id="userEmail" class="muted"></span>
+      </div>
+      <div class="flags">
+        <a class="flag" href="tagalog.html" aria-label="Tagalog (Filipinas)">
+          <span>🇵🇭</span>
+          <strong>Tagalog</strong>
+          <small class="muted">Filipinas</small>
+        </a>
+        <a class="flag" href="coming-en.html" aria-label="Inglés (USA)">
+          <span>🇺🇸</span>
+          <strong>English</strong>
+          <small class="muted">Próximamente</small>
+        </a>
+        <a class="flag" href="coming-zh.html" aria-label="Chino (China)">
+          <span>🇨🇳</span>
+          <strong>中文</strong>
+          <small class="muted">即将推出</small>
+        </a>
+      </div>
+    </section>
+
+    <footer>Gawa ni Harry</footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ==== Tema claro/oscuro ====
+    const root = document.documentElement;
+    const themeBtn = document.getElementById('themeBtn');
+    themeBtn.onclick = () => {
+      const t = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', t);
+      localStorage.setItem('theme', t);
+    };
+    root.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+
+    // ==== Supabase (tus claves reales) ====
+    const SUPABASE_URL      = "https://wszrttutzsmzayzpbnjq.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const authBox = document.getElementById('authBox');
+    const langBox = document.getElementById('langBox');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const userEmailEl = document.getElementById('userEmail');
+
+    async function onAuthed(){
+      const { data:{ user } } = await client.auth.getUser();
+      if(user){
+        authBox.classList.add('hidden');
+        langBox.classList.remove('hidden');
+        signOutBtn.classList.remove('hidden');
+        userEmailEl.textContent = user.email;
+      }else{
+        authBox.classList.remove('hidden');
+        langBox.classList.add('hidden');
+        signOutBtn.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('sendOtpBtn').onclick = async ()=>{
+      const email = document.getElementById('email').value.trim();
+      if(!email) return alert('Poné tu correo');
+      const { error } = await client.auth.signInWithOtp({ email });
+      if(error) alert(error.message); else alert('Código enviado.');
+    };
+    document.getElementById('verifyBtn').onclick = async ()=>{
+      const email = document.getElementById('email').value.trim();
+      const token = document.getElementById('otp').value.trim();
+      if(!email || !token) return alert('Correo y código');
+      const { error } = await client.auth.verifyOtp({ email, token, type:'email' });
+      if(error) alert(error.message);
+      await onAuthed();
+    };
+    signOutBtn.onclick = async ()=>{ await client.auth.signOut(); await onAuthed(); };
+
+    client.auth.getSession().then(({data:{session}})=> onAuthed());
+  </script>
+</body>
+</html>
