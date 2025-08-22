@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>PH · Tagalog</title>
 <style>
-  /* ===== Paleta ===== */
   :root{
     --bg:#f7faf9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --bd:#e5e7eb;
     --brand:#34d399; --brand-2:#a78bfa; --progress-bg:#e8eef1;
@@ -39,14 +38,11 @@
   .card.is-warn{box-shadow:0 0 0 6px var(--warn) inset}
   .card.is-due{box-shadow:0 0 0 6px var(--due) inset}
 
-  /* Paquetes */
   .pkg-row{display:flex;align-items:center;gap:8px}
   .note{font-size:13px}
 
-  /* Footer crédito */
   .credits{text-align:center;color:#d4af37;font-size:12px;margin:28px 0 8px;opacity:.9}
 
-  /* Modal práctica */
   #overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:saturate(120%) blur(2px);display:none;align-items:center;justify-content:center;z-index:50}
   #modal{width:min(680px,92vw);background:#fff;border-radius:16px;border:1px solid var(--bd);box-shadow:0 20px 60px rgba(16,24,40,.22);padding:18px}
   #modal header{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px 0}
@@ -75,7 +71,7 @@
   </div>
 </header>
 
-<section id="appSection" class="">
+<section id="appSection">
   <div class="card">
     <h3>Agregar palabra</h3>
     <div class="grid">
@@ -84,7 +80,6 @@
       <input id="example" placeholder="Ejemplo de uso">
       <input id="tags" placeholder="Etiquetas: saludo,verbo (coma separadas)">
     </div>
-
     <div class="row" style="margin-top:6px">
       <select id="fromLang"><option>Tagalog</option><option>Spanish</option><option>English</option></select>
       <select id="toLang"><option>Spanish</option><option>English</option></select>
@@ -92,7 +87,6 @@
       <button class="primary" id="addBtn">Agregar</button>
       <button id="exportBtn">Exportar CSV</button>
     </div>
-
     <div class="row" style="margin-top:6px">
       <input id="search" placeholder="Buscar..." style="flex:1">
       <select id="sort">
@@ -105,7 +99,6 @@
     </div>
   </div>
 
-  <!-- Paquetes / Categorías -->
   <div class="card">
     <h3>Paquetes (Categorías)</h3>
     <div class="pkg-row">
@@ -115,7 +108,7 @@
         <option value="basics">Básicos</option>
       </select>
       <button id="loadPkgBtn">Cargar</button>
-      <span class="note muted">Inserta un pequeño paquete de ejemplo en tu cuenta (Tagalog → Spanish).</span>
+      <span class="note muted">Inserta un pequeño paquete de ejemplo (Tagalog → Spanish).</span>
     </div>
   </div>
 
@@ -123,17 +116,13 @@
 
   <div class="row" style="align-items:center">
     <button class="primary" id="reviewBtn">Repasar hoy</button>
-
-    <!-- NUEVO: controles de práctica -->
     <select id="revScope">
       <option value="due">Pendientes</option>
       <option value="hard">Difíciles</option>
       <option value="all">Todas</option>
     </select>
     <select id="revCount">
-      <option>5</option>
-      <option>10</option>
-      <option>15</option>
+      <option>5</option><option>10</option><option>15</option>
     </select>
     <span id="dueInfo" class="muted"></span>
   </div>
@@ -146,19 +135,15 @@
       <h3 id="modTitle">Tarjeta <span id="revPos">0</span></h3>
       <button id="closeModalBtn">Cerrar</button>
     </header>
-
     <div id="frontTerm">—</div>
     <div id="revHint" class="muted"></div>
-
     <div style="text-align:center">
       <button id="showAnsBtn" class="pill">Mostrar significado</button>
     </div>
-
     <div id="revAnswer" class="hidden">
       <strong id="revMeaning"></strong>
       <div id="revExample" class="muted" style="margin-top:6px"></div>
     </div>
-
     <div class="btn-line">
       <button class="pill btn-bad"  data-q="0">Difícil</button>
       <button class="pill btn-mid"  data-q="3">Regular</button>
@@ -171,20 +156,21 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ===== CONFIG SUPABASE (tus mismas claves) ===== */
+/* ===== SUPABASE ===== */
 const SUPABASE_URL = "https://wszrttutzsmzayzpbnjq.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* ===== Helpers UI ===== */
+/* ===== Helpers ===== */
 const qs = s => document.querySelector(s);
-const listEl = qs('#list'); const countEl = qs('#countLabel');
-const overlay = qs('#overlay'); const modal = qs('#modal');
+const listEl = qs('#list'), countEl = qs('#countLabel');
+const overlay = qs('#overlay'), modal = qs('#modal');
 const streakVal = qs('#streakVal');
+function toast(m){ alert(m); }
+function esc(s){ return String(s??'').replace(/[&<>"/']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
-function toast(msg){alert(msg);} // simple
-
-/* ===== Tema claro/oscuro (simple) ===== */
+/* ===== Tema ===== */
 qs('#themeBtn').onclick = () => {
   const dark = document.documentElement.dataset.theme === 'dark';
   document.documentElement.dataset.theme = dark ? 'light' : 'dark';
@@ -192,26 +178,23 @@ qs('#themeBtn').onclick = () => {
   document.body.style.color = dark ? 'var(--ink)' : '#e5e7eb';
 };
 
-/* ===== Login (auto) ===== */
+/* ===== Sesión ===== */
 client.auth.getSession().then(({data:{session}})=>{ if(session) onAuthed(); });
 qs('#signOutBtn').onclick = async ()=>{ await client.auth.signOut(); location.reload(); };
 
 /* ===== Estado ===== */
-let reviewQueue = [], current=null, reviewed=0;
+let reviewQueue=[], current=null, reviewed=0;
+let wordsCache=[];  // << cache local para re-pintar instantáneo
 
-/* ===== Agregar palabra ===== */
-qs('#addBtn').onclick = addWord;
-qs('#parseBtn').onclick = () => {
-  // Entrada rápida "term | meaning | tags | ejemplo"
-  const raw = qs('#example').value.trim();
-  if(!raw) return toast('Nada para parsear');
-  const parts = raw.split('|').map(s=>s.trim());
-  if(parts[0]) qs('#term').value = parts[0];
-  if(parts[1]) qs('#meaning').value = parts[1];
-  if(parts[2]) qs('#tags').value = parts[2];
-  if(parts[3]) qs('#example').value = parts[3];
+/* ===== Agregar ===== */
+qs('#parseBtn').onclick = ()=>{
+  const raw = qs('#example').value.trim(); if(!raw) return toast('Nada para parsear');
+  const p = raw.split('|').map(s=>s.trim());
+  if(p[0]) qs('#term').value=p[0]; if(p[1]) qs('#meaning').value=p[1];
+  if(p[2]) qs('#tags').value=p[2]; if(p[3]) qs('#example').value=p[3];
 };
 
+qs('#addBtn').onclick = addWord;
 async function addWord(){
   const term = qs('#term').value.trim();
   const meaning = qs('#meaning').value.trim();
@@ -229,17 +212,24 @@ async function addWord(){
     from_lang: qs('#fromLang').value, to_lang: qs('#toLang').value,
     ease: 2.5, repetitions: 0, interval_days: 1,
     last_review_at: null,
-    next_review_at: new Date().toISOString() // queda como pendiente para hoy
+    next_review_at: new Date().toISOString()
   };
-  const { error } = await client.from('words').insert(row);
+
+  // INSERCIÓN + DEVOLVER FILA, y actualizar cache para render inmediato
+  const { data:newRow, error } = await client.from('words').insert(row).select('*').single();
   if(error){ console.error(error); return toast('No se pudo guardar: '+error.message); }
+
+  // limpiar inputs
   ['#term','#meaning','#example','#tags'].forEach(id=>qs(id).value='');
-  await loadWords();
+
+  // actualizar cache y re-render sin refrescar
+  wordsCache = [newRow, ...wordsCache];
+  renderList(wordsCache);
 }
 
-/* ===== Listar / buscar / ordenar ===== */
-qs('#search').oninput = () => loadWords();
-qs('#sort').onchange = () => loadWords();
+/* ===== Listar ===== */
+qs('#search').oninput = ()=>loadWords();
+qs('#sort').onchange = ()=>loadWords();
 
 async function onAuthed(){
   const { data:{ user } } = await client.auth.getUser();
@@ -249,32 +239,30 @@ async function onAuthed(){
 }
 
 async function loadWords(){
-  const { data:{session} } = await client.auth.getSession();
-  if(!session) return;
+  const { data:{session} } = await client.auth.getSession(); if(!session) return;
   const q = qs('#search').value.trim();
-  const [col, dir] = (qs('#sort').value || 'created_at.desc').split('.');
+  const [col, dir] = (qs('#sort').value||'created_at.desc').split('.');
   let query = client.from('words').select('*').eq('user_id', session.user.id)
     .order(col, { ascending: dir !== 'desc' }).limit(500);
   if(q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%`);
   const { data, error } = await query;
   if(error){ console.error(error); return toast(error.message); }
-  renderList(data || []);
+  wordsCache = data||[];
+  renderList(wordsCache);
 }
 
-/* ===== Progreso visual (sin cambiar tu DB) =====
-   - Si repetitions == 0  → 0%
-   - Luego crece con repeticiones y facilidad, y decae un poco con el tiempo. */
+/* ===== Progreso visual ===== */
 function masteryPct(row){
-  if(!row || (row.repetitions||0) === 0) return 0;          // NUEVO: recién creada → 0%
+  if(!row || (row.repetitions||0) === 0) return 0;
   const reps = row.repetitions || 0;
   const ease = row.ease || 2.5;
-  let base = Math.min(100, reps * 20);                      // 0,20,40,60,80,100…
-  let bonus = Math.max(0, ease - 2.3) * 10;                 // pequeño bonus por facilidad
+  let base = Math.min(100, reps * 20);
+  let bonus = Math.max(0, ease - 2.3) * 10;
   const last = new Date(row.last_review_at || row.created_at);
   const now = new Date();
   const days = (now - last)/86400000;
   const interval = Math.max(1, row.interval_days || 1);
-  const freshness = Math.max(0, 1 - (days/interval)*0.35);  // decae suave si te alejás del intervalo
+  const freshness = Math.max(0, 1 - (days/interval)*0.35);
   let pct = (base + bonus) * freshness;
   return Math.max(0, Math.min(100, Math.round(pct)));
 }
@@ -283,7 +271,6 @@ function renderList(rows){
   countEl.textContent = `${rows.length} palabra(s)`;
   listEl.innerHTML = '';
   if(!rows.length){ listEl.innerHTML = `<div class="muted">No hay resultados. Agregá tu primera palabra 🫰</div>`; return; }
-
   rows.forEach(r=>{
     const pct = masteryPct(r);
     const halo = pct > 60 ? 'is-ok' : pct > 25 ? 'is-warn' : 'is-due';
@@ -319,7 +306,8 @@ qs('#exportBtn').onclick = async ()=>{
   const rows = data||[];
   const csv = ['term,meaning,example,notes,tags,from_lang,to_lang,created_at']
     .concat(rows.map(r=>[
-      r.term, r.meaning, r.example||'', r.notes||'', (r.tags||[]).join('|'), r.from_lang||'', r.to_lang||'', r.created_at
+      r.term, r.meaning, r.example||'', r.notes||'', (r.tags||[]).join('|'),
+      r.from_lang||'', r.to_lang||'', r.created_at
     ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
   const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
@@ -339,7 +327,7 @@ qs('#loadPkgBtn').onclick = async ()=>{
       {term:'gusto', meaning:'gustar / querer', example:'Gusto ko ng kape.', tags:['basics']},
       {term:'pahingi', meaning:'¿me das...?', example:'Pahingi ng tubig.', tags:['conversation']},
       {term:'opo', meaning:'sí (formal)', example:'Opo.', tags:['basics']},
-      {term:'pasensya', meaning:'perdón / disculpa', example:'Pasensya na.', tags:['conversation']},
+      {term:'pasensya', meaning:'perdón', example:'Pasensya na.', tags:['conversation']},
       {term:'tulong', meaning:'ayuda', example:'Tulong!', tags:['emergency']},
       {term:'paalam', meaning:'adiós', example:'Paalam!', tags:['basics']}
     ],
@@ -368,9 +356,10 @@ qs('#loadPkgBtn').onclick = async ()=>{
   await loadWords();
 };
 
-/* ===== Práctica (modal) ===== */
+/* ===== Práctica ===== */
+const showAnsBtn = qs('#showAnsBtn');
 qs('#reviewBtn').onclick = startReview;
-qs('#showAnsBtn').onclick = ()=>qs('#revAnswer').classList.toggle('hidden');
+showAnsBtn.onclick = ()=>qs('#revAnswer').classList.toggle('hidden');
 qs('#closeModalBtn').onclick = closeModal;
 overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
 
@@ -389,17 +378,24 @@ async function startReview(){
     query = query.lte('next_review_at', now).order('next_review_at',{ascending:true});
   }else if(scope==='hard'){
     query = query.order('ease',{ascending:true}).order('repetitions',{ascending:true});
-  }else{ // all
+  }else{
     query = query.order('updated_at',{ascending:false}).order('created_at',{ascending:false});
   }
-  const { data, error } = await query.limit(200);
+  let { data, error } = await query.limit(200);
   if(error){ console.error(error); return toast(error.message); }
 
-  reviewQueue = (data||[]).slice(0, count);
+  // === MODO LIBRE automático: si no hay tarjetas según el filtro, practicamos "Todas" mezcladas ===
+  if(!data || !data.length){
+    const alt = await client.from('words').select('*').eq('user_id', session.user.id)
+      .order('updated_at',{ascending:false}).order('created_at',{ascending:false}).limit(200);
+    data = alt.data || [];
+  }
+
+  reviewQueue = shuffle((data||[]).slice(0, count));
   reviewed = 0;
   qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
 
-  if(!reviewQueue.length){ toast('No hay tarjetas según el filtro.'); return; }
+  if(!reviewQueue.length){ toast('No hay tarjetas para practicar aún.'); return; }
   nextCard();
   openModal();
 }
@@ -422,7 +418,6 @@ function nextCard(){
   qs('#revAnswer').classList.add('hidden');
 }
 
-/* botones de calidad */
 modal.querySelectorAll('[data-q]').forEach(btn=>{
   btn.addEventListener('click', ()=>gradeCard(+btn.dataset.q));
 });
@@ -455,15 +450,12 @@ async function gradeCard(q){
   nextCard();
 }
 
-/* ===== Racha (local) ===== */
+/* ===== Racha ===== */
 function readStreak(){ return Number(localStorage.getItem('streak')||0); }
-function writeStreak(n){ localStorage.setItem('streak', String(n)); updateStreakBadge();}
+function writeStreak(n){ localStorage.setItem('streak', String(n)); updateStreakBadge(); }
 function updateStreakBadge(){ streakVal.textContent = readStreak(); }
 function bumpStreak(){ writeStreak(readStreak()+1); }
 qs('#resetStreakBtn').onclick = ()=>{ if(confirm('Reiniciar racha?')) writeStreak(0); };
-
-/* ===== Utils ===== */
-function esc(s){ return String(s??'').replace(/[&<>"/']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 </script>
 </body>
 </html>
