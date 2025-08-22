@@ -1,67 +1,82 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PH · Tagalog</title>
-  <style>
-    :root{
-      --bg:#f7faf9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --bd:#e5e7eb;
-      --brand:#34d399; --brand-2:#a78bfa; --progress-bg:#e8eef1;
-    }
-    *{box-sizing:border-box}
-    body{font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);margin:0}
-    .wrap{max-width:980px;margin:16px auto;padding:0 16px}
-    header{display:flex;gap:12px;align-items:center;justify-content:flex-start;margin:8px 0 16px}
-    header .pill{padding:6px 10px;border:1px solid var(--bd);border-radius:999px;background:#fff;font-size:14px}
-    header .right{margin-left:auto;display:flex;gap:8px;align-items:center}
-    h1{font-size:22px;margin:0}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PH · Tagalog</title>
+<style>
+  /* ===== Paleta ===== */
+  :root{
+    --bg:#f7faf9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --bd:#e5e7eb;
+    --brand:#34d399; --brand-2:#a78bfa; --progress-bg:#e8eef1;
+    --ok:#22c55e20; --warn:#f59e0b20; --due:#ef444420;
+    --danger:#ef4444; --warn-strong:#f59e0b; --ok-strong:#22c55e;
+  }
+  body{font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);margin:24px auto;max-width:980px;padding:0 12px}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  h1{font-size:24px;margin:0}
+  .flag{font-size:26px;vertical-align:-3px}
+  .muted{color:var(--muted)}
+  .hidden{display:none}
+  input,button,select{padding:10px;border:1px solid var(--bd);border-radius:10px;background:#fff}
+  button{cursor:pointer}
+  .primary{background:var(--brand);color:#fff;border-color:transparent}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  .card{
+    background: radial-gradient(120% 120% at 100% 0%, rgba(167,139,250,.10), rgba(255,255,255,.90) 60%), var(--panel);
+    border:1px solid var(--bd);border-radius:12px;padding:12px;margin:10px 0;
+    transition:.18s ease;
+  }
+  .list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9}
+  .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;margin-right:6px}
 
-    .card{
-      background: radial-gradient(120% 120% at 100% 0%, rgba(167,139,250,.08), rgba(255,255,255,.95) 60%), var(--panel);
-      border:1px solid var(--bd); border-radius:12px; padding:12px; margin:8px 0;
-    }
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    @media(max-width:720px){ .grid{grid-template-columns:1fr} }
-    input,button,select,textarea{padding:10px;border:1px solid var(--bd);border-radius:10px;background:#fff}
-    button{cursor:pointer}
-    .primary{background:var(--brand);color:#fff;border-color:transparent}
-    .muted{color:var(--muted)}
-    .right-edge{display:flex;justify-content:flex-end}
+  .progress{height:6px;background:var(--progress-bg);border-radius:999px;overflow:hidden;margin-top:6px}
+  .progress i{display:block;height:100%;width:var(--pct,0%);background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .35s ease;border-radius:inherit}
 
-    /* lista */
-    .list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9}
-    .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;margin-right:6px}
-    .progress{height:6px;background:var(--progress-bg);border-radius:999px;overflow:hidden;margin-top:6px}
-    .progress>i{display:block;height:100%;width:var(--pct,0%);background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .4s ease;border-radius:inherit}
+  .card.is-ok{box-shadow:0 0 0 6px var(--ok) inset}
+  .card.is-warn{box-shadow:0 0 0 6px var(--warn) inset}
+  .card.is-due{box-shadow:0 0 0 6px var(--due) inset}
 
-    /* toast */
-    #toast{ position:fixed; right:16px; bottom:16px; display:flex; flex-direction:column; gap:8px; z-index:9999;}
-    .toast{ background:#fff; border:1px solid var(--bd); border-left:4px solid var(--brand);
-      padding:10px 12px; border-radius:10px; box-shadow:0 10px 24px rgba(16,24,40,.08); color:var(--ink); min-width:240px}
-    .toast.error{border-left-color:#ef4444}
+  /* Paquetes */
+  .pkg-row{display:flex;align-items:center;gap:8px}
+  .note{font-size:13px}
 
-    footer.credits{ text-align:center; color:#d4af37; font-size:12px; margin:28px 0 24px; opacity:.9; }
-  </style>
+  /* Footer crédito */
+  .credits{text-align:center;color:#d4af37;font-size:12px;margin:28px 0 8px;opacity:.9}
+
+  /* Modal práctica */
+  #overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:saturate(120%) blur(2px);display:none;align-items:center;justify-content:center;z-index:50}
+  #modal{width:min(680px,92vw);background:#fff;border-radius:16px;border:1px solid var(--bd);box-shadow:0 20px 60px rgba(16,24,40,.22);padding:18px}
+  #modal header{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px 0}
+  #modal h3{margin:0;font-size:14px;color:var(--muted)}
+  #frontTerm{font-size:32px;text-align:center;margin:18px 0 6px 0}
+  #revHint{font-size:13px;color:var(--muted);text-align:center;margin-bottom:10px}
+  #revAnswer{border-top:1px dashed var(--bd);padding-top:8px;margin-top:6px}
+  .btn-line{display:flex;gap:8px;justify-content:center;margin-top:12px}
+  .btn-bad{background:var(--danger);color:#fff;border-color:transparent}
+  .btn-mid{background:var(--warn-strong);color:#fff;border-color:transparent}
+  .btn-good{background:var(--ok-strong);color:#fff;border-color:transparent}
+  .pill{border-radius:999px;padding:.35rem .8rem}
+</style>
 </head>
 <body>
-<div id="toast" aria-live="polite"></div>
-<div class="wrap">
 
-  <header>
-    <h1>PH <span class="muted">Tagalog</span></h1>
-    <span class="pill">Racha: 🔥 <b id="streak">0</b></span>
-    <button id="resetStreakBtn" class="pill">Reiniciar</button>
-    <button id="themeBtn" class="pill">Tema</button>
-    <div class="right">
-      <span id="userEmail" class="muted"></span>
-      <button id="signOutBtn" class="pill">Salir</button>
-    </div>
-  </header>
+<header>
+  <span class="flag" aria-hidden="true">🇵🇭</span>
+  <h1>Tagalog</h1>
+  <div class="row" style="margin-left:auto">
+    <span class="muted">Racha: 🔥 <b id="streakVal">0</b></span>
+    <button id="resetStreakBtn">Reiniciar</button>
+    <button id="themeBtn">Tema</button>
+    <span id="userEmail" class="muted"></span>
+    <button id="signOutBtn">Salir</button>
+  </div>
+</header>
 
-  <!-- ============ AGREGAR PALABRA ============ -->
-  <section id="addCard" class="card">
+<section id="appSection" class="">
+  <div class="card">
     <h3>Agregar palabra</h3>
     <div class="grid">
       <input id="term" placeholder="Palabra en Tagalog *">
@@ -69,12 +84,15 @@
       <input id="example" placeholder="Ejemplo de uso">
       <input id="tags" placeholder="Etiquetas: saludo,verbo (coma separadas)">
     </div>
+
     <div class="row" style="margin-top:6px">
-      <select id="fromLang"><option>Tagalog</option><option>English</option><option>Spanish</option></select>
+      <select id="fromLang"><option>Tagalog</option><option>Spanish</option><option>English</option></select>
       <select id="toLang"><option>Spanish</option><option>English</option></select>
+      <button id="parseBtn">Parsear</button>
       <button class="primary" id="addBtn">Agregar</button>
       <button id="exportBtn">Exportar CSV</button>
     </div>
+
     <div class="row" style="margin-top:6px">
       <input id="search" placeholder="Buscar..." style="flex:1">
       <select id="sort">
@@ -85,296 +103,367 @@
       </select>
       <span class="muted" id="countLabel"></span>
     </div>
-  </section>
+  </div>
 
-  <!-- ============ CATEGORÍAS / PAQUETES ============ -->
-  <section id="packsCard" class="card">
+  <!-- Paquetes / Categorías -->
+  <div class="card">
     <h3>Paquetes (Categorías)</h3>
-    <div class="row">
-      <select id="packSelect" style="min-width:220px">
+    <div class="pkg-row">
+      <select id="pkgSelect">
         <option value="conversation">Conversación</option>
         <option value="restaurant">Restaurante</option>
-        <option value="shopping">Compras</option>
-        <option value="business">Negocios</option>
+        <option value="basics">Básicos</option>
       </select>
-      <button id="loadPackBtn" class="primary">Cargar</button>
-      <span class="muted">Se insertan 12 palabras de ejemplo en tu cuenta (Tagalog → Spanish).</span>
+      <button id="loadPkgBtn">Cargar</button>
+      <span class="note muted">Inserta un pequeño paquete de ejemplo en tu cuenta (Tagalog → Spanish).</span>
     </div>
-  </section>
+  </div>
 
-  <!-- ============ LISTA ============ -->
-  <section id="list" class="card"></section>
+  <div id="list" class="card"></div>
 
-  <div class="row">
+  <div class="row" style="align-items:center">
     <button class="primary" id="reviewBtn">Repasar hoy</button>
-    <select id="reviewFilter">
+
+    <!-- NUEVO: controles de práctica -->
+    <select id="revScope">
       <option value="due">Pendientes</option>
-      <option value="difficult">Difíciles primero</option>
+      <option value="hard">Difíciles</option>
       <option value="all">Todas</option>
     </select>
-    <select id="reviewBatch">
-      <option value="5">5 tarjetas</option>
-      <option value="10">10 tarjetas</option>
-      <option value="15">15 tarjetas</option>
+    <select id="revCount">
+      <option>5</option>
+      <option>10</option>
+      <option>15</option>
     </select>
     <span id="dueInfo" class="muted"></span>
   </div>
+</section>
 
-  <footer class="credits">Gawa ni Harry</footer>
+<!-- MODAL práctica -->
+<div id="overlay" aria-hidden="true">
+  <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modTitle">
+    <header>
+      <h3 id="modTitle">Tarjeta <span id="revPos">0</span></h3>
+      <button id="closeModalBtn">Cerrar</button>
+    </header>
+
+    <div id="frontTerm">—</div>
+    <div id="revHint" class="muted"></div>
+
+    <div style="text-align:center">
+      <button id="showAnsBtn" class="pill">Mostrar significado</button>
+    </div>
+
+    <div id="revAnswer" class="hidden">
+      <strong id="revMeaning"></strong>
+      <div id="revExample" class="muted" style="margin-top:6px"></div>
+    </div>
+
+    <div class="btn-line">
+      <button class="pill btn-bad"  data-q="0">Difícil</button>
+      <button class="pill btn-mid"  data-q="3">Regular</button>
+      <button class="pill btn-good" data-q="5">Fácil</button>
+    </div>
+  </div>
 </div>
+
+<footer class="credits">Gawa ni Harry</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ====== PEGA TUS CLAVES (uso las que me diste) ====== */
+/* ===== CONFIG SUPABASE (tus mismas claves) ===== */
 const SUPABASE_URL = "https://wszrttutzsmzayzpbnjq.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* ====== Helpers UI ====== */
-const $ = s => document.querySelector(s);
-const toastBox = $('#toast');
-function toast(msg, isError=false){
-  const el = document.createElement('div');
-  el.className = 'toast'+(isError?' error':''); el.textContent = msg;
-  toastBox.appendChild(el); setTimeout(()=>el.remove(), 3500);
-}
-function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+/* ===== Helpers UI ===== */
+const qs = s => document.querySelector(s);
+const listEl = qs('#list'); const countEl = qs('#countLabel');
+const overlay = qs('#overlay'); const modal = qs('#modal');
+const streakVal = qs('#streakVal');
 
-/* ====== Estado ====== */
-const userEmailEl = $('#userEmail');
-const listEl = $('#list');
-const countEl = $('#countLabel');
-const streakEl = $('#streak');
+function toast(msg){alert(msg);} // simple
 
-/* ====== Autenticación ya iniciada ====== */
-client.auth.getSession().then(async ({data:{session}})=>{
-  if(!session){ location.href = './index.html'; return; }   // si no hay sesión, vuelve a home
-  const { data:{ user } } = await client.auth.getUser();
-  userEmailEl.textContent = user?.email || '';
-  await loadWords();
-  await loadStreak();
-});
-$('#signOutBtn').onclick = async ()=>{ await client.auth.signOut(); location.href='./index.html'; };
-
-/* ====== Racha ====== */
-async function loadStreak(){
-  // Guardamos la racha en localStorage, incrementa si hay repaso del día
-  streakEl.textContent = localStorage.getItem('streak') || '0';
-}
-$('#resetStreakBtn').onclick = ()=>{
-  localStorage.setItem('streak','0'); streakEl.textContent='0'; toast('Racha reiniciada');
+/* ===== Tema claro/oscuro (simple) ===== */
+qs('#themeBtn').onclick = () => {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  document.body.style.background = dark ? 'var(--bg)' : '#111827';
+  document.body.style.color = dark ? 'var(--ink)' : '#e5e7eb';
 };
 
-/* ====== Agregar palabra (arreglado con errores visibles) ====== */
-$('#addBtn').onclick = addWord;
-async function addWord(){
-  const term     = $('#term').value.trim();
-  const meaning  = $('#meaning').value.trim();
-  const example  = $('#example').value.trim();
-  const tagsRaw  = $('#tags').value.trim();
-  const tags     = tagsRaw ? tagsRaw.split(',').map(s=>s.trim()).filter(Boolean) : null;
-  const fromLang = $('#fromLang').value;
-  const toLang   = $('#toLang').value;
+/* ===== Login (auto) ===== */
+client.auth.getSession().then(({data:{session}})=>{ if(session) onAuthed(); });
+qs('#signOutBtn').onclick = async ()=>{ await client.auth.signOut(); location.reload(); };
 
-  if(!term || !meaning){ toast('Palabra y significado son obligatorios', true); return; }
+/* ===== Estado ===== */
+let reviewQueue = [], current=null, reviewed=0;
+
+/* ===== Agregar palabra ===== */
+qs('#addBtn').onclick = addWord;
+qs('#parseBtn').onclick = () => {
+  // Entrada rápida "term | meaning | tags | ejemplo"
+  const raw = qs('#example').value.trim();
+  if(!raw) return toast('Nada para parsear');
+  const parts = raw.split('|').map(s=>s.trim());
+  if(parts[0]) qs('#term').value = parts[0];
+  if(parts[1]) qs('#meaning').value = parts[1];
+  if(parts[2]) qs('#tags').value = parts[2];
+  if(parts[3]) qs('#example').value = parts[3];
+};
+
+async function addWord(){
+  const term = qs('#term').value.trim();
+  const meaning = qs('#meaning').value.trim();
+  const example = qs('#example').value.trim();
+  const tagsRaw = qs('#tags').value.trim();
+  const tags = tagsRaw ? tagsRaw.split(',').map(s=>s.trim()).filter(Boolean) : null;
+  if(!term || !meaning) return toast('Palabra y significado son obligatorios');
 
   const { data:{session} } = await client.auth.getSession();
-  if(!session){ toast('Iniciá sesión', true); return; }
+  if(!session) return toast('Iniciá sesión');
 
-  const nowIso = new Date().toISOString();
   const row = {
     user_id: session.user.id, term, meaning,
     example: example || null, notes: null, tags,
-    from_lang: fromLang, to_lang: toLang,
-    ease: 2.5, repetitions: 0, interval_days: 0,
-    next_review_at: nowIso
+    from_lang: qs('#fromLang').value, to_lang: qs('#toLang').value,
+    ease: 2.5, repetitions: 0, interval_days: 1,
+    last_review_at: null,
+    next_review_at: new Date().toISOString() // queda como pendiente para hoy
   };
-
   const { error } = await client.from('words').insert(row);
-  if(error){ console.error(error); toast('No se pudo guardar: '+error.message, true); return; }
-
-  ['#term','#meaning','#example','#tags'].forEach(id=>$(id).value='');
-  toast('Guardado ✅'); await loadWords();
+  if(error){ console.error(error); return toast('No se pudo guardar: '+error.message); }
+  ['#term','#meaning','#example','#tags'].forEach(id=>qs(id).value='');
+  await loadWords();
 }
 
-/* ====== Listado / búsqueda ====== */
-$('#search').oninput = ()=>loadWords();
-$('#sort').onchange  = ()=>loadWords();
+/* ===== Listar / buscar / ordenar ===== */
+qs('#search').oninput = () => loadWords();
+qs('#sort').onchange = () => loadWords();
+
+async function onAuthed(){
+  const { data:{ user } } = await client.auth.getUser();
+  qs('#userEmail').textContent = user?.email || '';
+  await loadWords();
+  updateStreakBadge();
+}
 
 async function loadWords(){
-  const { data:{ session } } = await client.auth.getSession(); if(!session) return;
-  const q = $('#search').value.trim();
-  const [col, dir] = ($('#sort').value||'created_at.desc').split('.');
-
-  let query = client.from('words').select('*').eq('user_id', session.user.id).order(col, {ascending: dir!=='desc'}).limit(500);
+  const { data:{session} } = await client.auth.getSession();
+  if(!session) return;
+  const q = qs('#search').value.trim();
+  const [col, dir] = (qs('#sort').value || 'created_at.desc').split('.');
+  let query = client.from('words').select('*').eq('user_id', session.user.id)
+    .order(col, { ascending: dir !== 'desc' }).limit(500);
   if(q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%`);
-
   const { data, error } = await query;
-  if(error){ console.error(error); toast(error.message, true); return; }
-  renderList(data||[]);
+  if(error){ console.error(error); return toast(error.message); }
+  renderList(data || []);
 }
-function freshnessPct(r){
-  const last = new Date(r.last_review_at || r.created_at || Date.now());
-  const now  = new Date();
-  const daysSince = (now-last)/86400000;
-  const targetDays = Math.max(1, r.interval_days||1);
-  const left = Math.max(0, 1 - (daysSince/targetDays));
-  return Math.round(left*100);
+
+/* ===== Progreso visual (sin cambiar tu DB) =====
+   - Si repetitions == 0  → 0%
+   - Luego crece con repeticiones y facilidad, y decae un poco con el tiempo. */
+function masteryPct(row){
+  if(!row || (row.repetitions||0) === 0) return 0;          // NUEVO: recién creada → 0%
+  const reps = row.repetitions || 0;
+  const ease = row.ease || 2.5;
+  let base = Math.min(100, reps * 20);                      // 0,20,40,60,80,100…
+  let bonus = Math.max(0, ease - 2.3) * 10;                 // pequeño bonus por facilidad
+  const last = new Date(row.last_review_at || row.created_at);
+  const now = new Date();
+  const days = (now - last)/86400000;
+  const interval = Math.max(1, row.interval_days || 1);
+  const freshness = Math.max(0, 1 - (days/interval)*0.35);  // decae suave si te alejás del intervalo
+  let pct = (base + bonus) * freshness;
+  return Math.max(0, Math.min(100, Math.round(pct)));
 }
+
 function renderList(rows){
   countEl.textContent = `${rows.length} palabra(s)`;
-  if(!rows.length){ listEl.innerHTML = '<div class="muted">No hay resultados. Agregá tu primera palabra 🫰</div>'; return; }
-  listEl.innerHTML='';
+  listEl.innerHTML = '';
+  if(!rows.length){ listEl.innerHTML = `<div class="muted">No hay resultados. Agregá tu primera palabra 🫰</div>`; return; }
+
   rows.forEach(r=>{
-    const pct = freshnessPct(r);
+    const pct = masteryPct(r);
+    const halo = pct > 60 ? 'is-ok' : pct > 25 ? 'is-warn' : 'is-due';
     const div = document.createElement('div');
-    div.className = 'list-item';
+    div.className = `list-item card ${halo}`;
     div.innerHTML = `
       <div>
-        <strong>${escapeHtml(r.term)}</strong>
-        <div class="muted">${escapeHtml(r.example||'')}</div>
+        <strong>${esc(r.term)}</strong>
+        <div class="muted">${esc(r.example||'')}</div>
         <div class="progress"><i style="--pct:${pct}%"></i></div>
       </div>
       <div>
-        ${escapeHtml(r.meaning||'')}
-        <div>${(r.tags||[]).map(t=>`<span class="chip">${escapeHtml(t)}</span>`).join('')}</div>
+        ${esc(r.meaning||'')}
+        <div>${(r.tags||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
       </div>
-      <div class="right-edge">
+      <div class="right">
         <button onclick="delWord('${r.id}')">Eliminar</button>
       </div>`;
     listEl.appendChild(div);
   });
 }
-window.delWord = async (id)=>{
+window.delWord = async id=>{
   const { error } = await client.from('words').delete().eq('id', id);
-  if(error){ toast(error.message, true); return; }
+  if(error){ console.error(error); return toast(error.message); }
   await loadWords();
 };
 
-/* ====== Exportar CSV ====== */
-$('#exportBtn').onclick = async ()=>{
+/* ===== Exportar ===== */
+qs('#exportBtn').onclick = async ()=>{
   const { data:{session} } = await client.auth.getSession(); if(!session) return;
   const { data, error } = await client.from('words').select('*').eq('user_id', session.user.id);
-  if(error){ toast(error.message,true); return; }
+  if(error) return toast(error.message);
   const rows = data||[];
   const csv = ['term,meaning,example,notes,tags,from_lang,to_lang,created_at']
     .concat(rows.map(r=>[
       r.term, r.meaning, r.example||'', r.notes||'', (r.tags||[]).join('|'), r.from_lang||'', r.to_lang||'', r.created_at
     ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
-  const blob = new Blob([csv], {type:'text/csv'}); const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
+  const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
 };
 
-/* ====== Paquetes (Categorías) ====== */
-const PACKS = {
-  conversation: [
-    {t:'kamusta', m:'¿Cómo estás?', e:'Kamusta ka?', tags:['basics','conversation']},
-    {t:'opo', m:'sí (formal)', e:'Opo, salamat.', tags:['basics']},
-    {t:'hindi', m:'no', e:'Hindi po.', tags:['basics']},
-    {t:'salamat', m:'gracias', e:'Salamat po.', tags:['basics']},
-    {t:'paalam', m:'adiós', e:'Paalam na.', tags:['basics']},
-    {t:'oo', m:'sí', e:'Oo, sige.', tags:['basics']},
-    {t:'pakiusap', m:'por favor', e:'Pakiusap, tulungan mo ako.', tags:['basics']},
-    {t:'pasensya', m:'perdón', e:'Pasensya na.', tags:['basics']},
-    {t:'anong pangalan mo?', m:'¿cómo te llamas?', e:'Anong pangalan mo?', tags:['conversation']},
-    {t:'ako si Harry', m:'soy Harry', e:'Ako si Harry.', tags:['conversation']},
-    {t:'saan ka nakatira?', m:'¿dónde vives?', e:'Saan ka nakatira?', tags:['conversation']},
-    {t:'taga-rito', m:'de aquí', e:'Taga-rito ako.', tags:['conversation']}
-  ],
-  restaurant: [
-    {t:'menu', m:'menú', e:'Pwede bang makita ang menu?', tags:['restaurant']},
-    {t:'kape', m:'café', e:'Gusto ko ng kape.', tags:['restaurant']},
-    {t:'tubig', m:'agua', e:'Tubig po.', tags:['restaurant']},
-    {t:'kanin', m:'arroz (cocido)', e:'May kanin ba?', tags:['restaurant']},
-    {t:'manok', m:'pollo', e:'Pritong manok.', tags:['restaurant']},
-    {t:'baboy', m:'cerdo', e:'Adobong baboy.', tags:['restaurant']},
-    {t:'isda', m:'pescado', e:'Inihaw na isda.', tags:['restaurant']},
-    {t:'bil', m:'cuenta', e:'Pakibigay ang bil.', tags:['restaurant']},
-    {t:'masarap', m:'rico', e:'Masarap ito.', tags:['restaurant']},
-    {t:'hindi maanghang', m:'no picante', e:'Hindi maanghang, please.', tags:['restaurant']},
-    {t:'gutom', m:'hambre', e:'Gutom ako.', tags:['restaurant']},
-    {t:'busog', m:'satisfecho', e:'Busog na ako.', tags:['restaurant']}
-  ],
-  shopping: [
-    {t:'magkano?', m:'¿cuánto?', e:'Magkano ito?', tags:['shopping']},
-    {t:'tawad', m:'rebaja', e:'Pwede bang tawad?', tags:['shopping']},
-    {t:'resibo', m:'recibo', e:'Pakiresibo.', tags:['shopping']},
-    {t:'wallet', m:'cartera', e:'Nasaan ang wallet ko?', tags:['shopping']},
-    {t:'damit', m:'ropa', e:'Bibili ako ng damit.', tags:['shopping']},
-    {t:'sapatos', m:'zapatos', e:'Maganda ang sapatos.', tags:['shopping']},
-    {t:'mura', m:'barato', e:'Mura dito.', tags:['shopping']},
-    {t:'mahal', m:'caro', e:'Mahal naman!', tags:['shopping']},
-    {t:'bukas', m:'abierto', e:'Bukas pa ba?', tags:['shopping']},
-    {t:'sarado', m:'cerrado', e:'Sarado na.', tags:['shopping']},
-    {t:'hulog', m:'pago a plazos', e:'Pwede hulog?', tags:['shopping']},
-    {t:'cash', m:'efectivo', e:'Cash po.', tags:['shopping']}
-  ],
-  business: [
-    {t:'kumpanya', m:'empresa', e:'Saang kumpanya ka?', tags:['business']},
-    {t:'empleyado', m:'empleado', e:'Empleyado ako.', tags:['business']},
-    {t:'kita', m:'ingreso', e:'Tumaas ang kita.', tags:['business']},
-    {t:'pulong', m:'reunión', e:'May pulong bukas.', tags:['business']},
-    {t:'kontrata', m:'contrato', e:'Pirmahan ang kontrata.', tags:['business']},
-    {t:'ulats', m:'informe', e:'Ihanda ang ulat.', tags:['business']},
-    {t:'tantiya', m:'presupuesto', e:'Magbigay ng tantiya.', tags:['business']},
-    {t:'suweldo', m:'salario', e:'Kailan ang suweldo?', tags:['business']},
-    {t:'deadline', m:'plazo', e:'Nasaan na ang deadline?', tags:['business']},
-    {t:'kliyente', m:'cliente', e:'Ka-meeting ang kliyente.', tags:['business']},
-    {t:'proposal', m:'propuesta', e:'Isumite ang proposal.', tags:['business']},
-    {t:'aproba', m:'aprobar', e:'Na-aprubahan na.', tags:['business']}
-  ]
-};
+/* ===== Paquetes demo ===== */
+qs('#loadPkgBtn').onclick = async ()=>{
+  const opt = qs('#pkgSelect').value;
+  const sample = {
+    conversation: [
+      {term:'kamusta', meaning:'¿cómo estás?', example:'Kamusta ka?', tags:['conversation']},
+      {term:'salamat', meaning:'gracias', example:'Salamat po.', tags:['basics','conversation']},
+      {term:'oo', meaning:'sí', example:'Oo, sige.', tags:['basics']},
+      {term:'hindi', meaning:'no', example:'Hindi po.', tags:['basics']},
+      {term:'pakiusap', meaning:'por favor', example:'Pakiusap, tulungan mo ako.', tags:['conversation']},
+      {term:'magkano', meaning:'¿cuánto cuesta?', example:'Magkano ito?', tags:['shopping']},
+      {term:'gusto', meaning:'gustar / querer', example:'Gusto ko ng kape.', tags:['basics']},
+      {term:'pahingi', meaning:'¿me das...?', example:'Pahingi ng tubig.', tags:['conversation']},
+      {term:'opo', meaning:'sí (formal)', example:'Opo.', tags:['basics']},
+      {term:'pasensya', meaning:'perdón / disculpa', example:'Pasensya na.', tags:['conversation']},
+      {term:'tulong', meaning:'ayuda', example:'Tulong!', tags:['emergency']},
+      {term:'paalam', meaning:'adiós', example:'Paalam!', tags:['basics']}
+    ],
+    restaurant: [
+      {term:'kafe', meaning:'café', example:'Gusto ko ng kape.', tags:['restaurant']},
+      {term:'kanin', meaning:'arroz', example:'May kanin ba?', tags:['restaurant']},
+      {term:'tubig', meaning:'agua', example:'Tubig, please.', tags:['restaurant']},
+    ],
+    basics: [
+      {term:'bahay', meaning:'casa', example:'Nasa bahay ako.', tags:['basics']},
+      {term:'trabaho', meaning:'trabajo', example:'May trabaho ako.', tags:['basics']},
+    ]
+  }[opt];
 
-$('#loadPackBtn').onclick = async ()=>{
-  const key = $('#packSelect').value;
-  const items = PACKS[key]||[];
-  if(!items.length){ toast('Paquete vacío', true); return; }
-  const { data:{session} } = await client.auth.getSession(); if(!session){ toast('Iniciá sesión', true); return; }
-
-  const rows = items.map(x=>({
-    user_id: session.user.id, term:x.t, meaning:x.m, example:x.e,
-    tags:x.tags, from_lang:'Tagalog', to_lang:'Spanish',
-    ease:2.5, repetitions:0, interval_days:0, next_review_at:new Date().toISOString()
+  const { data:{session} } = await client.auth.getSession();
+  if(!session) return toast('Iniciá sesión');
+  const rows = (sample||[]).map(x=>({
+    user_id: session.user.id, from_lang:'Tagalog', to_lang:'Spanish',
+    ease:2.5, repetitions:0, interval_days:1,
+    next_review_at: new Date().toISOString(),
+    ...x
   }));
-
+  if(!rows.length) return;
   const { error } = await client.from('words').insert(rows);
-  if(error){ console.error(error); toast('Error al cargar: '+error.message, true); return; }
-  toast('Paquete cargado ✅'); await loadWords();
+  if(error){ console.error(error); return toast(error.message); }
+  await loadWords();
 };
 
-/* ====== REPASO (lanza modal en otra pantalla, aquí solo prepara lote) ====== */
-let reviewQueue=[];
-$('#reviewBtn').onclick = async ()=>{
+/* ===== Práctica (modal) ===== */
+qs('#reviewBtn').onclick = startReview;
+qs('#showAnsBtn').onclick = ()=>qs('#revAnswer').classList.toggle('hidden');
+qs('#closeModalBtn').onclick = closeModal;
+overlay.addEventListener('click', e=>{ if(e.target===overlay) closeModal(); });
+
+function openModal(){ overlay.style.display='flex'; overlay.setAttribute('aria-hidden','false'); }
+function closeModal(){ overlay.style.display='none'; overlay.setAttribute('aria-hidden','true'); current=null; }
+
+async function startReview(){
+  const scope = qs('#revScope').value;   // due | hard | all
+  const count = Number(qs('#revCount').value)||5;
+
   const { data:{session} } = await client.auth.getSession(); if(!session) return;
-  const mode = $('#reviewFilter').value;
-  const limit = +$('#reviewBatch').value;
+  let query = client.from('words').select('*').eq('user_id', session.user.id);
 
-  let q = client.from('words').select('*').eq('user_id', session.user.id);
-  if(mode==='due'){ q = q.lte('next_review_at', new Date().toISOString()); }
-  const { data, error } = await q.order('next_review_at', {ascending:true}).limit(500);
-  if(error){ toast(error.message, true); return; }
+  if(scope==='due'){
+    const now = new Date().toISOString();
+    query = query.lte('next_review_at', now).order('next_review_at',{ascending:true});
+  }else if(scope==='hard'){
+    query = query.order('ease',{ascending:true}).order('repetitions',{ascending:true});
+  }else{ // all
+    query = query.order('updated_at',{ascending:false}).order('created_at',{ascending:false});
+  }
+  const { data, error } = await query.limit(200);
+  if(error){ console.error(error); return toast(error.message); }
 
-  let rows = data||[];
-  if(mode==='difficult'){ rows = [...rows].sort((a,b)=>(a.ease||2.5)-(b.ease||2.5)); }
-  reviewQueue = rows.slice(0, limit);
+  reviewQueue = (data||[]).slice(0, count);
+  reviewed = 0;
+  qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
 
-  if(!reviewQueue.length){ toast('Nada para repasar'); return; }
-  // Guardamos lote en sessionStorage y vamos a la vista de práctica (flashcards)
-  sessionStorage.setItem('reviewQueue', JSON.stringify(reviewQueue));
-  location.href='./review.html'; // <- usa tu página de tarjetas (si la tenés)
-  // si aún no la creaste, podés mantener este aviso:
-  // toast('Próximamente: vista de tarjetas');
-};
+  if(!reviewQueue.length){ toast('No hay tarjetas según el filtro.'); return; }
+  nextCard();
+  openModal();
+}
 
-/* ====== Tema (simple toggle) ====== */
-let dark=false; $('#themeBtn').onclick=()=>{
-  dark=!dark;
-  document.documentElement.style.setProperty('--bg', dark?'#0b1220':'#f7faf9');
-  document.documentElement.style.setProperty('--panel', dark?'#0f172a':'#ffffff');
-  document.documentElement.style.setProperty('--ink', dark?'#e2e8f0':'#0f172a');
-  document.documentElement.style.setProperty('--bd', dark?'#1f2937':'#e5e7eb');
-  document.body.style.background= getComputedStyle(document.documentElement).getPropertyValue('--bg');
-};
+function nextCard(){
+  current = reviewQueue.shift();
+  if(!current){
+    closeModal();
+    toast('¡Repaso listo!');
+    loadWords();
+    bumpStreak();
+    return;
+  }
+  reviewed++;
+  qs('#revPos').textContent = `${reviewed}`;
+  qs('#frontTerm').textContent = current.term;
+  qs('#revHint').textContent = (current.from_lang||'Tagalog')+' → '+(current.to_lang||'Spanish');
+  qs('#revMeaning').textContent = current.meaning||'';
+  qs('#revExample').textContent = current.example||'';
+  qs('#revAnswer').classList.add('hidden');
+}
+
+/* botones de calidad */
+modal.querySelectorAll('[data-q]').forEach(btn=>{
+  btn.addEventListener('click', ()=>gradeCard(+btn.dataset.q));
+});
+
+function sm2(prevEase=2.5, prevInterval=0, prevReps=0, q=3){
+  let EF = prevEase, reps = prevReps, I = prevInterval;
+  if (q < 3) { reps = 0; I = 1; }
+  else {
+    if (reps === 0) I = 1;
+    else if (reps === 1) I = 6;
+    else I = Math.round(I * EF);
+    reps += 1;
+    EF = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+    if (EF < 1.3) EF = 1.3;
+  }
+  return { EF, I, reps };
+}
+
+async function gradeCard(q){
+  if(!current) return;
+  const { EF, I, reps } = sm2(current.ease||2.5, current.interval_days||1, current.repetitions||0, q);
+  const next = new Date(); next.setDate(next.getDate() + (I||1));
+  const updates = {
+    ease: EF, interval_days: I, repetitions: reps,
+    last_review_at: new Date().toISOString(),
+    next_review_at: next.toISOString()
+  };
+  const { error } = await client.from('words').update(updates).eq('id', current.id);
+  if(error){ console.error(error); return toast('No pude actualizar: '+error.message); }
+  nextCard();
+}
+
+/* ===== Racha (local) ===== */
+function readStreak(){ return Number(localStorage.getItem('streak')||0); }
+function writeStreak(n){ localStorage.setItem('streak', String(n)); updateStreakBadge();}
+function updateStreakBadge(){ streakVal.textContent = readStreak(); }
+function bumpStreak(){ writeStreak(readStreak()+1); }
+qs('#resetStreakBtn').onclick = ()=>{ if(confirm('Reiniciar racha?')) writeStreak(0); };
+
+/* ===== Utils ===== */
+function esc(s){ return String(s??'').replace(/[&<>"/']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 </script>
 </body>
 </html>
