@@ -1,84 +1,139 @@
 <!doctype html>
 <html lang="es" data-theme="light">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>TalaLog · Tagalog</title>
-<link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#34d399">
-<style>
-:root{
-  --bg:#f7faf9;--panel:#ffffff;--ink:#0f172a;--muted:#64748b;--bd:#e5e7eb;
-  --brand:#34d399;--brand2:#a78bfa; --danger:#ef4444;--warn:#f59e0b;--ok:#22c55e;
-}
-[data-theme="dark"]{
-  --bg:#0b1020;--panel:#121a2b;--ink:#e5f0ff;--muted:#8aa0c2;--bd:#22304b;
-  --brand:#38d39f;--brand2:#8b7af5;
-}
-*{box-sizing:border-box} body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;background:var(--bg);color:var(--ink)}
-[hidden]{display:none!important} /* <- NUEVO: oculta con prioridad */
-.wrap{max-width:1060px;margin:0 auto;padding:16px}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
-h1{margin:0;font-size:22px;display:flex;align-items:center;gap:8px}
-.btn{border:1px solid var(--bd);background:#fff;color:var(--ink);padding:8px 12px;border-radius:10px;cursor:pointer}
-[data-theme="dark"] .btn{background:#16233c}
-.card{background:radial-gradient(120% 120% at 100% 0%, rgba(167,139,250,.10), rgba(255,255,255,.92) 60%), var(--panel);border:1px solid var(--bd);border-radius:12px;padding:12px;margin:8px 0}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-@media(max-width:800px){.grid{grid-template-columns:1fr}}
-input,select,textarea{padding:10px;border:1px solid var(--bd);border-radius:10px;width:100%}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.muted{color:var(--muted)}
-.badge{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;display:inline-block;margin-right:6px}
-.right{margin-left:auto}
-.progress{height:6px;background:#e8eef1;border-radius:999px;overflow:hidden;margin-top:6px}
-.progress>i{display:block;height:100%;width:var(--pct,0%);background:linear-gradient(90deg,var(--brand),var(--brand2));transition:width .4s ease}
-.list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #eef2f7}
-/* Review modal */
-#reviewCard{position:fixed;inset:0;background:rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;padding:16px}
-#reviewBox{max-width:720px;width:100%;background:var(--panel);border:1px solid var(--bd);border-radius:16px;padding:16px}
-#front{font-size:28px;text-align:center;margin:12px 0}
-#back{font-size:18px;text-align:center;margin:10px 0}
-.quality .btn{min-width:110px}
-.btn-ok{background:var(--ok);color:#fff;border:0}
-.btn-warn{background:var(--warn);color:#fff;border:0}
-.btn-bad{background:var(--danger);color:#fff;border:0}
-footer{margin:16px 0;text-align:center;color:#d4af37;font-size:12px}
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Tagalog — Vocabulario</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <style>
+    /* ===== Paleta clara y tranquila (menta + lavanda) ===== */
+    :root{
+      --bg:#f7faf9;        /* fondo muy claro */
+      --panel:#ffffff;     /* tarjetas y paneles */
+      --ink:#0f172a;       /* texto principal */
+      --muted:#64748b;     /* texto secundario */
+      --bd:#e5e7eb;        /* bordes sutiles */
+
+      --brand:#34d399;     /* menta (primario) */
+      --brand-2:#a78bfa;   /* lavanda (complemento) */
+
+      --progress-bg:#e8eef1; /* fondo de barra */
+
+      --ok:#22c55e20;      /* halos opcionales */
+      --warn:#f59e0b20;
+      --due:#ef444420;
+    }
+    [data-theme="dark"]{
+      --bg:#0b1220;
+      --panel:#0f172a;
+      --ink:#e2e8f0;
+      --muted:#94a3b8;
+      --bd:#1f2937;
+      --progress-bg:#111827;
+    }
+
+    *{box-sizing:border-box}
+    body{font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);margin:0}
+    main{max-width:980px;margin:24px auto;padding:0 16px}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px;padding:12px 16px}
+    .brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700}
+    .flag{font-size:24px}
+
+    .pill{font-size:14px;padding:6px 10px;border:1px solid var(--bd);border-radius:999px;background:var(--panel)}
+    .btn{border:1px solid var(--bd);background:#fff;color:var(--ink);padding:9px 12px;border-radius:10px;cursor:pointer}
+    .btn.primary{background:var(--brand);color:#fff;border-color:transparent}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+
+    input,button,textarea,select{padding:10px;border:1px solid var(--bd);border-radius:10px;margin:4px 0;background:#fff;color:var(--ink)}
+    input,textarea,select{width:100%}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    @media(max-width:728px){.grid{grid-template-columns:1fr}}
+    .hidden{display:none!important}
+    .muted{color:var(--muted)}
+    .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;margin-right:6px}
+
+    /* Card */
+    .card{
+      background: radial-gradient(120% 120% at 100% 0%, rgba(167,139,250,.10), rgba(255,255,255,.90) 60%), var(--panel);
+      border:1px solid var(--bd);
+      border-radius:12px;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+      padding:12px;
+      margin:12px 0;
+    }
+    .card:hover{
+      transform: translateY(-2px);
+      border-color: color-mix(in oklab, var(--brand) 40%, var(--bd));
+      box-shadow: 0 12px 28px rgba(16,24,40,.08);
+      background: radial-gradient(120% 120% at 100% 0%, rgba(52,211,153,.10), rgba(255,255,255,.92) 60%), var(--panel);
+    }
+
+    .list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9}
+    .right{margin-left:auto}
+
+    .progress{height:6px;background:var(--progress-bg);border-radius:999px;overflow:hidden;margin-top:6px}
+    .progress > i{display:block;height:100%;width:var(--pct,0%);background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .4s ease;border-radius:inherit}
+
+    .card.is-ok{box-shadow:0 0 0 6px var(--ok) inset}
+    .card.is-warn{box-shadow:0 0 0 6px var(--warn) inset}
+    .card.is-due{box-shadow:0 0 0 6px var(--due) inset}
+
+    /* Modal review */
+    #reviewCard{
+      position:fixed;inset:0;background:rgba(2,6,23,.55);
+      display:none;align-items:center;justify-content:center;z-index:9999;
+      backdrop-filter: blur(2px);
+    }
+    #reviewBox{
+      background:var(--panel);border:1px solid var(--bd);border-radius:16px;
+      width:min(680px,92%);padding:18px;box-shadow:0 15px 40px rgba(0,0,0,.25)
+    }
+    #front{font-size:28px;text-align:center;margin:18px 0}
+    .quality .btn{min-width:110px}
+    .btn-bad   {background:#ef4444;color:#fff;border-color:transparent}
+    .btn-warn  {background:#f59e0b;color:#fff;border-color:transparent}
+    .btn-ok    {background:#22c55e;color:#fff;border-color:transparent}
+
+    .credits{text-align:center;color:#d4af37;font-size:12px;margin:28px 0 8px;opacity:.9}
+  </style>
 </head>
 <body>
-<div class="wrap">
+<main>
   <header>
-    <h1><span aria-hidden="true">🇵🇭</span> Tagalog</h1>
-    <div class="row">
-      <span class="muted">Racha: 🔥 <b id="streakNum">0</b></span>
-      <button id="resetStreakBtn" class="btn">Reiniciar</button>
-      <button id="themeBtn" class="btn">Tema</button>
+    <div class="brand"><span class="flag" aria-label="Bandera de Filipinas">🇵🇭</span> <span>Tagalog</span></div>
+    <div class="row" style="align-items:center">
+      <span id="streakPill" class="pill">Racha: 🔥 <b id="streak">0</b></span>
+      <button id="resetStreak" class="pill">Reiniciar</button>
+      <button id="toggleTheme" class="pill">Tema</button>
       <span id="userEmail" class="muted"></span>
-      <button id="signOutBtn" class="btn">Salir</button>
+      <button id="signOutBtn" class="pill">Salir</button>
     </div>
   </header>
 
-  <!-- Agregar palabra -->
+  <!-- === Agregar palabra === -->
   <section class="card">
-    <h3 style="margin:6px 0">Agregar palabra</h3>
+    <h3>Agregar palabra</h3>
     <div class="grid">
       <input id="term"    placeholder="Palabra en Tagalog *">
       <input id="meaning" placeholder="Significado (ES/EN)">
       <input id="example" placeholder="Ejemplo de uso">
       <input id="tags"    placeholder="Etiquetas: saludo,verbo (coma separadas)">
     </div>
+
     <div class="grid">
       <div class="row">
         <select id="fromLang"><option>Tagalog</option><option>English</option><option>Spanish</option></select>
         <select id="toLang"><option>Spanish</option><option>English</option></select>
-        <button class="btn" id="addBtn">Agregar</button>
-        <button class="btn" id="exportBtn">Exportar CSV</button>
       </div>
       <div class="row">
-        <input id="quick" placeholder="Entrada rápida: kape | café | saludo,comida | ejemplo">
-        <button class="btn" id="parseBtn">Parsear</button>
+        <input id="quick" placeholder="Entrada rápida: kape | café | basics,restaurant | Gusto ko ng kape.">
+        <button id="parseBtn" class="btn">Parsear</button>
+        <button id="addBtn"  class="btn primary">Agregar</button>
+        <button id="exportBtn" class="btn">Exportar CSV</button>
       </div>
     </div>
+
     <div class="row">
       <input id="search" placeholder="Buscar..." style="flex:1">
       <select id="sort">
@@ -87,357 +142,331 @@ footer{margin:16px 0;text-align:center;color:#d4af37;font-size:12px}
         <option value="term.desc">Z–A</option>
         <option value="updated_at.desc">Editadas reciente</option>
       </select>
-      <span class="muted" id="countLabel">0 palabra(s)</span>
+      <span class="muted" id="countLabel"></span>
     </div>
   </section>
 
-  <!-- Onboarding + Importador -->
-  <section class="card" id="welcome">
-    <h3>¿Primera vez aquí?</h3>
-    <p class="muted">Añadí tus primeras palabras, o importa un paquete.</p>
-    <div class="row">
-      <button class="btn" id="seedBtn">Añadir ejemplos</button>
-      <button class="btn" id="load1000Btn">Cargar 1000</button>
-      <button class="btn" id="loadCustomBtn">Cargar paquete…</button>
-    </div>
-  </section>
+  <div id="list" class="card"></div>
 
-  <!-- Lista -->
-  <section id="list" class="card"></section>
-
-  <!-- Repaso -->
-  <section class="row" style="align-items:center;margin-top:6px">
-    <button class="btn" id="reviewBtn">Repasar hoy</button>
-    <select id="reviewCount">
-      <option value="5">5</option>
-      <option value="10">10</option>
-      <option value="15">15</option>
+  <div class="row" style="align-items:center">
+    <button class="btn primary" id="reviewBtn">Repasar hoy</button>
+    <select id="reviewScope" class="pill">
+      <option value="5">5 tarjetas</option>
+      <option value="10">10 tarjetas</option>
+      <option value="15">15 tarjetas</option>
       <option value="hard">Difíciles</option>
+      <option value="all">Todas vencidas</option>
     </select>
-    <span id="dueInfo" class="muted">0 para repasar</span>
-  </section>
+    <span id="dueInfo" class="muted"></span>
+  </div>
 
-  <footer>Gawa ni Harry</footer>
-</div>
-
-<!-- Modal de review: AHORA arranca oculto con hidden -->
-<div id="reviewCard" hidden aria-modal="true" role="dialog">
-  <div id="reviewBox">
-    <div class="row" style="justify-content:space-between">
-      <div class="muted">Tarjeta <span id="revPos">0</span></div>
-      <button class="btn" id="closeReview">Cerrar</button>
-    </div>
-    <div id="front">—</div>
-    <button class="btn" id="showAnsBtn" style="display:block;margin:0 auto">Mostrar significado</button>
-    <div id="back" hidden>
-      <strong id="revMeaning"></strong>
-      <div id="revExample" class="muted" style="margin-top:6px"></div>
-    </div>
-    <div class="row quality" style="justify-content:center;margin-top:8px">
-      <button class="btn btn-bad"  data-q="0">Difícil</button>
-      <button class="btn btn-warn" data-q="3">Regular</button>
-      <button class="btn btn-ok"   data-q="5">Fácil</button>
+  <!-- === Modal Review (oculto por defecto) === -->
+  <div id="reviewCard" hidden style="display:none" aria-modal="true" role="dialog">
+    <div id="reviewBox">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div class="muted">Tarjeta <span id="revPos">0</span></div>
+        <button type="button" class="btn" id="closeReview">Cerrar</button>
+      </div>
+      <div id="front">—</div>
+      <button type="button" class="btn" id="showAnsBtn" style="display:block;margin:0 auto">Mostrar significado</button>
+      <div id="back" hidden>
+        <strong id="revMeaning"></strong>
+        <div id="revExample" class="muted" style="margin-top:6px"></div>
+      </div>
+      <div class="row quality" style="justify-content:center;margin-top:8px">
+        <button type="button" class="btn btn-bad"  data-q="0">Difícil</button>
+        <button type="button" class="btn btn-warn" data-q="3">Regular</button>
+        <button type="button" class="btn btn-ok"   data-q="5">Fácil</button>
+      </div>
     </div>
   </div>
-</div>
+
+  <footer class="credits">Gawa ni Harry</footer>
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* === Tema === */
-const root = document.documentElement;
-document.getElementById('themeBtn').onclick = ()=>{
-  const t = root.getAttribute('data-theme')==='dark'?'light':'dark';
-  root.setAttribute('data-theme', t);
-  localStorage.setItem('theme', t);
-};
-root.setAttribute('data-theme', localStorage.getItem('theme')||'light');
-
-/* === Supabase === */
-const SUPABASE_URL      = "https://wszrttutzsmzayzpbnjq.supabase.co";
+/* ========= SUPABASE ========= */
+const SUPABASE_URL = "https://wszrttutzsmzayzpbnjq.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* === Guard: si no hay sesión vuelve a index === */
+/* ========= UI helpers ========= */
+const qs = s => document.querySelector(s);
+const userEmailEl = qs('#userEmail');
+const listEl      = qs('#list');
+const countEl     = qs('#countLabel');
+
+const reviewCard  = qs('#reviewCard');
+const reviewBox   = qs('#reviewBox');
+const backBox     = qs('#back');
+const frontEl     = qs('#front');
+const revMeaning  = qs('#revMeaning');
+const revExample  = qs('#revExample');
+
+/* ========= Tema ========= */
+qs('#toggleTheme').onclick = () => {
+  const r = document.documentElement;
+  const next = r.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  r.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+}
+const savedTheme = localStorage.getItem('theme') || 'light';
+document.documentElement.setAttribute('data-theme', savedTheme);
+
+/* ========= Racha ========= */
+const STREAK_KEY = 'talalog_streak';
+function getStreak(){ return +(localStorage.getItem(STREAK_KEY)||0); }
+function setStreak(n){ localStorage.setItem(STREAK_KEY, n); qs('#streak').textContent = n; }
+function bumpStreak(){ setStreak(getStreak()+1); }
+qs('#resetStreak').onclick = ()=> setStreak(0);
+setStreak(getStreak());
+
+/* ========= Auth ========= */
+qs('#signOutBtn').onclick = async () => { await client.auth.signOut(); location.href = './'; };
 client.auth.getSession().then(async ({data:{session}})=>{
-  if(!session){ location.href='index.html'; return; }
-  const { data:{user} } = await client.auth.getUser();
-  document.getElementById('userEmail').textContent = user.email;
-  await refreshToday();
+  if(!session){ location.href = './'; return; }
+  userEmailEl.textContent = session.user.email || '';
   await loadWords();
-  closeReview(); // <- Fuerza cerrado por las dudas
+  refreshToday();
 });
 
-/* === Sign out === */
-document.getElementById('signOutBtn').onclick = async ()=>{ await client.auth.signOut(); location.href='index.html'; };
-
-/* === UI refs === */
-const qs = s => document.querySelector(s);
-const listEl   = qs('#list');
-const countEl  = qs('#countLabel');
-const welcome  = qs('#welcome');
-const streakEl = qs('#streakNum');
-
-/* === Agregar palabra === */
-qs('#addBtn').onclick = addWord;
-qs('#parseBtn').onclick = ()=>{
-  const t = qs('#quick').value.trim();
-  const parts = t.split('|').map(s=>s.trim());
-  qs('#term').value    = parts[0]||'';
-  qs('#meaning').value = parts[1]||'';
-  qs('#tags').value    = parts[2]||'';
-  qs('#example').value = parts[3]||'';
+/* ========= Entrada rápida (Parsear) ========= */
+qs('#parseBtn').onclick = () => {
+  const raw = qs('#quick').value.trim();
+  if(!raw) return;
+  const parts = raw.split('|').map(s=>s.trim());
+  qs('#term').value    = parts[0] || '';
+  qs('#meaning').value = parts[1] || '';
+  qs('#tags').value    = parts[2] || '';
+  qs('#example').value = parts[3] || '';
 };
 
+/* ========= Alta de palabra ========= */
+qs('#addBtn').onclick = addWord;
 async function addWord(){
   const term     = qs('#term').value.trim();
   const meaning  = qs('#meaning').value.trim();
-  if(!term || !meaning) return alert('Palabra y significado son obligatorios');
   const example  = qs('#example').value.trim();
-  const tags     = (qs('#tags').value.trim()||'').split(',').map(s=>s.trim()).filter(Boolean);
-  const fromLang = qs('#fromLang').value;
-  const toLang   = qs('#toLang').value;
+  const tagsRaw  = qs('#tags').value.trim();
+  const tags     = tagsRaw ? tagsRaw.split(',').map(s=>s.trim()).filter(Boolean) : null;
+  if (!term || !meaning) return alert('Palabra y significado son obligatorios');
 
-  const { data:{session} } = await client.auth.getSession();
+  const { data: { session } } = await client.auth.getSession();
+  if (!session) return alert('Iniciá sesión');
+
   const row = {
     user_id: session.user.id,
-    term, meaning, example: example||null, tags: tags.length?tags:null,
-    from_lang: fromLang, to_lang: toLang,
+    term, meaning,
+    example: example || null,
+    notes: null,
+    tags,
+    from_lang: qs('#fromLang').value,
+    to_lang:   qs('#toLang').value,
     ease: 2.5, repetitions: 0, interval_days: 0,
-    last_review_at: null,
     next_review_at: new Date().toISOString()
   };
+
   const { error } = await client.from('words').insert(row);
-  if(error){ console.error(error); return alert(error.message); }
-  ['#term','#meaning','#example','#tags','#quick'].forEach(id=>qs(id).value='');
+  if (error) { console.error(error); return alert('No se pudo guardar: ' + error.message); }
+
+  ['#term','#meaning','#example','#tags','#quick'].forEach(id => qs(id).value = '');
   await loadWords();
 }
 
-/* === Buscar / Ordenar === */
-qs('#search').oninput = ()=>loadWords();
-qs('#sort').onchange  = ()=>loadWords();
+/* ========= Listado / búsqueda / orden ========= */
+qs('#search').oninput = () => loadWords();
+qs('#sort').onchange  = () => loadWords();
 
 async function loadWords(){
-  const { data:{session} } = await client.auth.getSession();
-  if(!session) return;
+  const { data: { session } } = await client.auth.getSession();
+  if (!session) return;
   const q = qs('#search').value.trim();
-  const [col,dir] = (qs('#sort').value||'created_at.desc').split('.');
-  let query = client.from('words').select('*').eq('user_id', session.user.id).order(col,{ascending:dir!=='desc'}).limit(500);
-  if(q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%`);
+  const [col, dir] = (qs('#sort').value || 'created_at.desc').split('.');
+
+  let query = client.from('words')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .order(col, { ascending: dir !== 'desc' })
+    .limit(500);
+
+  if (q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%`);
+
   const { data, error } = await query;
-  if(error){ console.error(error); return; }
-  renderList(data||[]);
+  if (error) { console.error(error); return alert(error.message); }
+  renderList(data || []);
 }
 
 function freshnessPct(row){
   const last = new Date(row.last_review_at || row.created_at);
   const now  = new Date();
-  const daysSince = (now-last)/86400000;
-  const target = Math.max(1, row.interval_days||1);
-  const left = Math.max(0, 1 - (daysSince/target));
-  return Math.round(left*100);
+  const daysSince = (now - last) / 86400000;
+  const targetDays = Math.max(1, row.interval_days || 1);
+  const left = Math.max(0, 1 - (daysSince / targetDays));
+  return Math.round(left * 100);
 }
 
 function renderList(rows){
   countEl.textContent = `${rows.length} palabra(s)`;
   listEl.innerHTML = '';
-  welcome.style.display = rows.length? 'none':'block';
-  if(!rows.length){ listEl.innerHTML='<div class="muted">No hay resultados. Agregá tu primera palabra 🫰</div>'; return; }
+  if (!rows.length){
+    listEl.innerHTML = '<div class="muted">No hay resultados. Agregá tu primera palabra 🫰</div>';
+    return;
+  }
 
   rows.forEach(r=>{
     const pct = freshnessPct(r);
+    const stateClass = pct > 60 ? 'is-ok' : pct > 25 ? 'is-warn' : 'is-due';
     const div = document.createElement('div');
-    div.className = 'list-item';
+    div.className = `list-item card ${stateClass}`;
     div.innerHTML = `
       <div>
-        <strong>${escapeHtml(r.term)}</strong>
-        <div class="muted">${escapeHtml(r.example||'')}</div>
+        <strong>${esc(r.term)}</strong>
+        <div class="muted">${esc(r.example||'')}</div>
         <div class="progress"><i style="--pct:${pct}%"></i></div>
       </div>
       <div>
-        ${escapeHtml(r.meaning||'')}
-        <div>${(r.tags||[]).map(t=>`<span class="badge">${escapeHtml(t)}</span>`).join('')}</div>
+        ${esc(r.meaning||'')}
+        <div>${(r.tags||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div>
       </div>
       <div class="right">
-        <button class="btn" data-del="${r.id}">Eliminar</button>
+        <button class="btn" onclick="delWord('${r.id}')">Eliminar</button>
       </div>`;
     listEl.appendChild(div);
   });
-
-  listEl.querySelectorAll('[data-del]').forEach(b=>b.onclick=async ()=>{
-    const id = b.getAttribute('data-del');
-    const { error } = await client.from('words').delete().eq('id', id);
-    if(error) alert(error.message); else loadWords();
-  });
 }
+window.delWord = async (id) => {
+  const { error } = await client.from('words').delete().eq('id', id);
+  if (error) { console.error(error); return alert(error.message); }
+  await loadWords();
+};
 
-/* === Exportar CSV === */
+/* ========= Exportar ========= */
 qs('#exportBtn').onclick = async ()=>{
-  const { data:{session} } = await client.auth.getSession();
+  const { data: { session } } = await client.auth.getSession(); if (!session) return;
   const { data, error } = await client.from('words').select('*').eq('user_id', session.user.id);
-  if(error){ alert(error.message); return; }
-  const rows = data||[];
+  if (error) return alert(error.message);
+  const rows = data || [];
   const csv = ['term,meaning,example,notes,tags,from_lang,to_lang,created_at']
-    .concat(rows.map(r=>[
-      r.term,r.meaning,r.example||'',r.notes||'',(r.tags||[]).join('|'),r.from_lang||'',r.to_lang||'',r.created_at
-    ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const url = URL.createObjectURL(blob);
+    .concat(rows.map(r => [
+      r.term, r.meaning, r.example||'', r.notes||'', (r.tags||[]).join('|'), r.from_lang||'', r.to_lang||'', r.created_at
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
 };
 
-/* === Semillas rápidas === */
-qs('#seedBtn').onclick = async ()=>{
-  const { data:{session} } = await client.auth.getSession();
-  const base = [
-    {term:'salamat', meaning:'gracias', example:'Salamat po.', tags:['basics']},
-    {term:'kape', meaning:'café', example:'Gusto ko ng kape.', tags:['basics','restaurant']},
-    {term:'tubig', meaning:'agua', tags:['basics']},
-    {term:'oo', meaning:'sí', tags:['basics']},
-    {term:'hindi', meaning:'no', tags:['basics']}
-  ];
-  const rows = base.map(r=>({
-    user_id:session.user.id, from_lang:'Tagalog', to_lang:'Spanish',
-    ease:2.5,repetitions:0,interval_days:0,next_review_at:new Date().toISOString(), ...r
-  }));
-  const { error } = await client.from('words').insert(rows);
-  if(error) alert(error.message); else loadWords();
-};
-
-/* === Importador de paquetes JSON === */
-async function insertBatch(rows){
-  if(!rows.length) return;
-  const { data:{session} } = await client.auth.getSession();
-  const ready = rows.map(r=>({
-    user_id: session.user.id,
-    term: r.term,
-    meaning: r.meaning,
-    example: r.example || null,
-    tags: r.tags || null,
-    from_lang: 'Tagalog',
-    to_lang:   'Spanish',
-    ease: 2.5, repetitions: 0, interval_days: 0,
-    last_review_at: null,
-    next_review_at: new Date().toISOString()
-  }));
-  const { error } = await client.from('words').insert(ready);
-  if(error) throw error;
+/* ========= Due info ========= */
+async function refreshToday(){
+  const { data: { session } } = await client.auth.getSession(); if (!session) return;
+  const now = new Date().toISOString();
+  const { data, error } = await client.from('words')
+    .select('id')
+    .eq('user_id', session.user.id)
+    .lte('next_review_at', now);
+  if(error) return;
+  qs('#dueInfo').textContent = `${(data||[]).length} para repasar`;
 }
-async function loadPackage(url){
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('No pude leer el paquete: '+url);
-  const items = await res.json();
-  for(let i=0;i<items.length;i+=100){ await insertBatch(items.slice(i,i+100)); }
-  await loadWords(); await refreshToday();
-  alert('Paquete cargado: '+items.length+' palabras');
-}
-document.getElementById('load1000Btn').onclick = async ()=>{ try{ await loadPackage('packages/tagalog-1000.json'); }catch(e){ alert(e.message); } };
-document.getElementById('loadCustomBtn').onclick = async ()=>{
-  const url = prompt('Pegá la URL del paquete JSON (ej: packages/otro.json)'); if(!url) return;
-  try{ await loadPackage(url); }catch(e){ alert(e.message); }
-};
 
-/* === Review (flash cards) === */
+/* ========= Review modal (robusto) ========= */
+function showReview(){ reviewCard.hidden = false; reviewCard.style.display = 'flex'; }
+function hideReview(){ reviewCard.hidden = true; reviewCard.style.display = 'none'; }
+qs('#closeReview').addEventListener('click', hideReview);
+reviewCard.addEventListener('click', (e)=>{ if(e.target === reviewCard) hideReview(); });
+document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideReview(); });
+
 let reviewQueue=[], current=null, reviewed=0;
-const reviewCard = document.getElementById('reviewCard');
-const backBox    = document.getElementById('back');
-
-function openReview(){ reviewCard.hidden = false; }
-function closeReview(){ reviewCard.hidden = true; }          // <- NUEVO
-document.getElementById('closeReview').onclick = closeReview; // <- NUEVO
-reviewCard.addEventListener('click', e=>{ if(e.target===reviewCard) closeReview(); }); // click afuera
-document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeReview(); });      // Esc
-
-document.getElementById('reviewBtn').onclick = startReview;
-document.getElementById('showAnsBtn').onclick = ()=>{ backBox.hidden = !backBox.hidden };
-document.querySelectorAll('.quality [data-q]').forEach(b=>b.onclick=()=>gradeCard(+b.dataset.q));
+qs('#reviewBtn').onclick = startReview;
+qs('#showAnsBtn').onclick = ()=> backBox.hidden = !backBox.hidden;
+document.querySelectorAll('#reviewBox [data-q]').forEach(b=>b.onclick=()=>gradeCard(+b.dataset.q));
 
 async function startReview(){
-  const mode = qs('#reviewCount').value;
-  const { data:{session} } = await client.auth.getSession();
-  let q = client.from('words').select('*').eq('user_id', session.user.id);
+  const { data: { session } } = await client.auth.getSession(); if (!session) return;
+  const now = new Date().toISOString();
 
-  if(mode==='hard'){
-    const { data } = await q.order('ease',{ascending:true}).limit(150);
-    reviewQueue = (data||[]).filter(r=>freshnessPct(r)<40).slice(0,15);
-  }else{
-    const now = new Date().toISOString();
-    const limit = Number(mode)||5;
-    const { data } = await q.lte('next_review_at', now).order('next_review_at',{ascending:true}).limit(limit);
-    reviewQueue = data||[];
+  // Traemos vencidas (hasta 400 para filtrar en cliente)
+  const { data, error } = await client.from('words')
+    .select('*').eq('user_id', session.user.id)
+    .lte('next_review_at', now)
+    .order('next_review_at', { ascending:true })
+    .limit(400);
+  if (error) return alert(error.message);
+
+  const scope = qs('#reviewScope').value; // 5 / 10 / 15 / hard / all
+  let pool = data || [];
+
+  if(scope === 'hard'){
+    // Difíciles = menos de 35% de frescura o EF < 2.2
+    pool = pool.filter(r => freshnessPct(r) < 35 || (r.ease||2.5) < 2.2);
   }
 
-  reviewed=0;
-  qs('#dueInfo').textContent = `${reviewQueue.length} para repasar`;
-  if(reviewQueue.length===0){ alert('No hay tarjetas vencidas.'); return; }
-  openReview(); nextCard();
+  if(['5','10','15'].includes(scope)){
+    pool = pool.slice(0, +scope);
+  }
+
+  reviewQueue = pool;
+  reviewed = 0;
+
+  if(reviewQueue.length === 0){
+    alert('No hay tarjetas vencidas.');
+    return;
+  }
+
+  showReview();
+  nextCard();
 }
 
 function nextCard(){
   current = reviewQueue.shift();
+
   if(!current){
-    closeReview(); bumpStreak(); refreshToday(); loadWords(); alert('¡Repaso listo!'); return;
+    hideReview();
+    bumpStreak();
+    refreshToday();
+    loadWords();
+    alert('¡Repaso listo!');
+    return;
   }
+
   reviewed++;
   qs('#revPos').textContent = `${reviewed}`;
-  qs('#front').textContent = current.term;
-  qs('#revMeaning').textContent = current.meaning||'';
-  qs('#revExample').textContent = current.example||'';
-  backBox.hidden = true; // siempre oculta el reverso al mostrar una nueva
+  qs('#front').textContent  = current.term;
+  qs('#revMeaning').textContent = current.meaning || '';
+  qs('#revExample').textContent = current.example || '';
+  backBox.hidden = true;
 }
 
+/* === SM-2 === */
 function sm2(prevEase=2.5, prevInterval=0, prevReps=0, q=3){
-  let EF=prevEase, reps=prevReps, I=prevInterval;
-  if(q<3){ reps=0; I=1; }
-  else{
-    if(reps===0) I=1; else if(reps===1) I=6; else I=Math.round(I*EF);
+  let EF = prevEase, reps = prevReps, I = prevInterval;
+  if (q < 3) { reps = 0; I = 1; }
+  else {
+    if (reps === 0) I = 1;
+    else if (reps === 1) I = 6;
+    else I = Math.round(I * EF);
     reps += 1;
-    EF = EF + (0.1 - (5 - q)*(0.08 + (5 - q)*0.02));
-    if(EF<1.3) EF=1.3;
-  } return { EF, I, reps };
+    EF = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+    if (EF < 1.3) EF = 1.3;
+  }
+  return { EF, I, reps };
 }
+
 async function gradeCard(quality){
-  if(!current) return;
-  const { EF,I,reps } = sm2(current.ease||2.5, current.interval_days||0, current.repetitions||0, quality);
+  if (!current) return;
+  const { EF, I, reps } = sm2(current.ease||2.5, current.interval_days||0, current.repetitions||0, quality);
   const next = new Date(); next.setDate(next.getDate() + (I||1));
-  const updates = { ease:EF, interval_days:I, repetitions:reps, last_review_at:new Date().toISOString(), next_review_at: next.toISOString() };
+  const updates = {
+    ease: EF, interval_days: I, repetitions: reps,
+    last_review_at: new Date().toISOString(),
+    next_review_at: next.toISOString()
+  };
   const { error } = await client.from('words').update(updates).eq('id', current.id);
-  if(error){ alert(error.message); return; }
+  if (error) { console.error(error); return alert('No pude actualizar: '+error.message); }
   nextCard();
 }
 
-/* === Contadores y racha === */
-async function refreshToday(){
-  const { data:{session} } = await client.auth.getSession();
-  const now = new Date().toISOString();
-  const { data, error } = await client.from('words').select('id').eq('user_id', session.user.id).lte('next_review_at', now);
-  if(!error) qs('#dueInfo').textContent = `${(data||[]).length} para repasar`;
-  document.getElementById('streakNum').textContent = getStreak();
-}
-function getStreak(){
-  const k='talalog-streak', d='talalog-last';
-  const today = new Date().toDateString();
-  const last = localStorage.getItem(d);
-  const n = Number(localStorage.getItem(k)||0);
-  return last===today ? n : n;
-}
-function bumpStreak(){
-  const k='talalog-streak', d='talalog-last';
-  const today = new Date().toDateString();
-  const last = localStorage.getItem(d);
-  let n = Number(localStorage.getItem(k)||0);
-  if(last!==today){ n+=1; localStorage.setItem(k,String(n)); localStorage.setItem(d,today); }
-  document.getElementById('streakNum').textContent = n;
-}
-document.getElementById('resetStreakBtn').onclick = ()=>{
-  localStorage.setItem('talalog-streak','0'); localStorage.removeItem('talalog-last');
-  document.getElementById('streakNum').textContent='0';
-};
+/* ========= util ========= */
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
 
-/* === utils === */
-function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-
-/* === Registrar SW === */
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js'); }
 </script>
 </body>
 </html>
