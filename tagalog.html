@@ -65,4 +65,316 @@
     <h3>Agregar palabra</h3>
     <div class="grid">
       <input id="term" placeholder="Palabra en Tagalog *">
-      <input
+      <input id="meaning" placeholder="Significado (ES/EN)">
+      <input id="example" placeholder="Ejemplo de uso">
+      <input id="tags" placeholder="Etiquetas: saludo,verbo (coma separadas)">
+    </div>
+    <div class="row" style="margin-top:6px">
+      <select id="fromLang"><option>Tagalog</option><option>English</option><option>Spanish</option></select>
+      <select id="toLang"><option>Spanish</option><option>English</option></select>
+      <button class="primary" id="addBtn">Agregar</button>
+      <button id="exportBtn">Exportar CSV</button>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <input id="search" placeholder="Buscar..." style="flex:1">
+      <select id="sort">
+        <option value="created_at.desc">Recientes primero</option>
+        <option value="term.asc">A–Z</option>
+        <option value="term.desc">Z–A</option>
+        <option value="updated_at.desc">Editadas reciente</option>
+      </select>
+      <span class="muted" id="countLabel"></span>
+    </div>
+  </section>
+
+  <!-- ============ CATEGORÍAS / PAQUETES ============ -->
+  <section id="packsCard" class="card">
+    <h3>Paquetes (Categorías)</h3>
+    <div class="row">
+      <select id="packSelect" style="min-width:220px">
+        <option value="conversation">Conversación</option>
+        <option value="restaurant">Restaurante</option>
+        <option value="shopping">Compras</option>
+        <option value="business">Negocios</option>
+      </select>
+      <button id="loadPackBtn" class="primary">Cargar</button>
+      <span class="muted">Se insertan 12 palabras de ejemplo en tu cuenta (Tagalog → Spanish).</span>
+    </div>
+  </section>
+
+  <!-- ============ LISTA ============ -->
+  <section id="list" class="card"></section>
+
+  <div class="row">
+    <button class="primary" id="reviewBtn">Repasar hoy</button>
+    <select id="reviewFilter">
+      <option value="due">Pendientes</option>
+      <option value="difficult">Difíciles primero</option>
+      <option value="all">Todas</option>
+    </select>
+    <select id="reviewBatch">
+      <option value="5">5 tarjetas</option>
+      <option value="10">10 tarjetas</option>
+      <option value="15">15 tarjetas</option>
+    </select>
+    <span id="dueInfo" class="muted"></span>
+  </div>
+
+  <footer class="credits">Gawa ni Harry</footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ====== PEGA TUS CLAVES (uso las que me diste) ====== */
+const SUPABASE_URL = "https://wszrttutzsmzayzpbnjq.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ====== Helpers UI ====== */
+const $ = s => document.querySelector(s);
+const toastBox = $('#toast');
+function toast(msg, isError=false){
+  const el = document.createElement('div');
+  el.className = 'toast'+(isError?' error':''); el.textContent = msg;
+  toastBox.appendChild(el); setTimeout(()=>el.remove(), 3500);
+}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+/* ====== Estado ====== */
+const userEmailEl = $('#userEmail');
+const listEl = $('#list');
+const countEl = $('#countLabel');
+const streakEl = $('#streak');
+
+/* ====== Autenticación ya iniciada ====== */
+client.auth.getSession().then(async ({data:{session}})=>{
+  if(!session){ location.href = './index.html'; return; }   // si no hay sesión, vuelve a home
+  const { data:{ user } } = await client.auth.getUser();
+  userEmailEl.textContent = user?.email || '';
+  await loadWords();
+  await loadStreak();
+});
+$('#signOutBtn').onclick = async ()=>{ await client.auth.signOut(); location.href='./index.html'; };
+
+/* ====== Racha ====== */
+async function loadStreak(){
+  // Guardamos la racha en localStorage, incrementa si hay repaso del día
+  streakEl.textContent = localStorage.getItem('streak') || '0';
+}
+$('#resetStreakBtn').onclick = ()=>{
+  localStorage.setItem('streak','0'); streakEl.textContent='0'; toast('Racha reiniciada');
+};
+
+/* ====== Agregar palabra (arreglado con errores visibles) ====== */
+$('#addBtn').onclick = addWord;
+async function addWord(){
+  const term     = $('#term').value.trim();
+  const meaning  = $('#meaning').value.trim();
+  const example  = $('#example').value.trim();
+  const tagsRaw  = $('#tags').value.trim();
+  const tags     = tagsRaw ? tagsRaw.split(',').map(s=>s.trim()).filter(Boolean) : null;
+  const fromLang = $('#fromLang').value;
+  const toLang   = $('#toLang').value;
+
+  if(!term || !meaning){ toast('Palabra y significado son obligatorios', true); return; }
+
+  const { data:{session} } = await client.auth.getSession();
+  if(!session){ toast('Iniciá sesión', true); return; }
+
+  const nowIso = new Date().toISOString();
+  const row = {
+    user_id: session.user.id, term, meaning,
+    example: example || null, notes: null, tags,
+    from_lang: fromLang, to_lang: toLang,
+    ease: 2.5, repetitions: 0, interval_days: 0,
+    next_review_at: nowIso
+  };
+
+  const { error } = await client.from('words').insert(row);
+  if(error){ console.error(error); toast('No se pudo guardar: '+error.message, true); return; }
+
+  ['#term','#meaning','#example','#tags'].forEach(id=>$(id).value='');
+  toast('Guardado ✅'); await loadWords();
+}
+
+/* ====== Listado / búsqueda ====== */
+$('#search').oninput = ()=>loadWords();
+$('#sort').onchange  = ()=>loadWords();
+
+async function loadWords(){
+  const { data:{ session } } = await client.auth.getSession(); if(!session) return;
+  const q = $('#search').value.trim();
+  const [col, dir] = ($('#sort').value||'created_at.desc').split('.');
+
+  let query = client.from('words').select('*').eq('user_id', session.user.id).order(col, {ascending: dir!=='desc'}).limit(500);
+  if(q) query = query.or(`term.ilike.%${q}%,meaning.ilike.%${q}%`);
+
+  const { data, error } = await query;
+  if(error){ console.error(error); toast(error.message, true); return; }
+  renderList(data||[]);
+}
+function freshnessPct(r){
+  const last = new Date(r.last_review_at || r.created_at || Date.now());
+  const now  = new Date();
+  const daysSince = (now-last)/86400000;
+  const targetDays = Math.max(1, r.interval_days||1);
+  const left = Math.max(0, 1 - (daysSince/targetDays));
+  return Math.round(left*100);
+}
+function renderList(rows){
+  countEl.textContent = `${rows.length} palabra(s)`;
+  if(!rows.length){ listEl.innerHTML = '<div class="muted">No hay resultados. Agregá tu primera palabra 🫰</div>'; return; }
+  listEl.innerHTML='';
+  rows.forEach(r=>{
+    const pct = freshnessPct(r);
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.innerHTML = `
+      <div>
+        <strong>${escapeHtml(r.term)}</strong>
+        <div class="muted">${escapeHtml(r.example||'')}</div>
+        <div class="progress"><i style="--pct:${pct}%"></i></div>
+      </div>
+      <div>
+        ${escapeHtml(r.meaning||'')}
+        <div>${(r.tags||[]).map(t=>`<span class="chip">${escapeHtml(t)}</span>`).join('')}</div>
+      </div>
+      <div class="right-edge">
+        <button onclick="delWord('${r.id}')">Eliminar</button>
+      </div>`;
+    listEl.appendChild(div);
+  });
+}
+window.delWord = async (id)=>{
+  const { error } = await client.from('words').delete().eq('id', id);
+  if(error){ toast(error.message, true); return; }
+  await loadWords();
+};
+
+/* ====== Exportar CSV ====== */
+$('#exportBtn').onclick = async ()=>{
+  const { data:{session} } = await client.auth.getSession(); if(!session) return;
+  const { data, error } = await client.from('words').select('*').eq('user_id', session.user.id);
+  if(error){ toast(error.message,true); return; }
+  const rows = data||[];
+  const csv = ['term,meaning,example,notes,tags,from_lang,to_lang,created_at']
+    .concat(rows.map(r=>[
+      r.term, r.meaning, r.example||'', r.notes||'', (r.tags||[]).join('|'), r.from_lang||'', r.to_lang||'', r.created_at
+    ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'}); const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='talalog.csv'; a.click(); URL.revokeObjectURL(url);
+};
+
+/* ====== Paquetes (Categorías) ====== */
+const PACKS = {
+  conversation: [
+    {t:'kamusta', m:'¿Cómo estás?', e:'Kamusta ka?', tags:['basics','conversation']},
+    {t:'opo', m:'sí (formal)', e:'Opo, salamat.', tags:['basics']},
+    {t:'hindi', m:'no', e:'Hindi po.', tags:['basics']},
+    {t:'salamat', m:'gracias', e:'Salamat po.', tags:['basics']},
+    {t:'paalam', m:'adiós', e:'Paalam na.', tags:['basics']},
+    {t:'oo', m:'sí', e:'Oo, sige.', tags:['basics']},
+    {t:'pakiusap', m:'por favor', e:'Pakiusap, tulungan mo ako.', tags:['basics']},
+    {t:'pasensya', m:'perdón', e:'Pasensya na.', tags:['basics']},
+    {t:'anong pangalan mo?', m:'¿cómo te llamas?', e:'Anong pangalan mo?', tags:['conversation']},
+    {t:'ako si Harry', m:'soy Harry', e:'Ako si Harry.', tags:['conversation']},
+    {t:'saan ka nakatira?', m:'¿dónde vives?', e:'Saan ka nakatira?', tags:['conversation']},
+    {t:'taga-rito', m:'de aquí', e:'Taga-rito ako.', tags:['conversation']}
+  ],
+  restaurant: [
+    {t:'menu', m:'menú', e:'Pwede bang makita ang menu?', tags:['restaurant']},
+    {t:'kape', m:'café', e:'Gusto ko ng kape.', tags:['restaurant']},
+    {t:'tubig', m:'agua', e:'Tubig po.', tags:['restaurant']},
+    {t:'kanin', m:'arroz (cocido)', e:'May kanin ba?', tags:['restaurant']},
+    {t:'manok', m:'pollo', e:'Pritong manok.', tags:['restaurant']},
+    {t:'baboy', m:'cerdo', e:'Adobong baboy.', tags:['restaurant']},
+    {t:'isda', m:'pescado', e:'Inihaw na isda.', tags:['restaurant']},
+    {t:'bil', m:'cuenta', e:'Pakibigay ang bil.', tags:['restaurant']},
+    {t:'masarap', m:'rico', e:'Masarap ito.', tags:['restaurant']},
+    {t:'hindi maanghang', m:'no picante', e:'Hindi maanghang, please.', tags:['restaurant']},
+    {t:'gutom', m:'hambre', e:'Gutom ako.', tags:['restaurant']},
+    {t:'busog', m:'satisfecho', e:'Busog na ako.', tags:['restaurant']}
+  ],
+  shopping: [
+    {t:'magkano?', m:'¿cuánto?', e:'Magkano ito?', tags:['shopping']},
+    {t:'tawad', m:'rebaja', e:'Pwede bang tawad?', tags:['shopping']},
+    {t:'resibo', m:'recibo', e:'Pakiresibo.', tags:['shopping']},
+    {t:'wallet', m:'cartera', e:'Nasaan ang wallet ko?', tags:['shopping']},
+    {t:'damit', m:'ropa', e:'Bibili ako ng damit.', tags:['shopping']},
+    {t:'sapatos', m:'zapatos', e:'Maganda ang sapatos.', tags:['shopping']},
+    {t:'mura', m:'barato', e:'Mura dito.', tags:['shopping']},
+    {t:'mahal', m:'caro', e:'Mahal naman!', tags:['shopping']},
+    {t:'bukas', m:'abierto', e:'Bukas pa ba?', tags:['shopping']},
+    {t:'sarado', m:'cerrado', e:'Sarado na.', tags:['shopping']},
+    {t:'hulog', m:'pago a plazos', e:'Pwede hulog?', tags:['shopping']},
+    {t:'cash', m:'efectivo', e:'Cash po.', tags:['shopping']}
+  ],
+  business: [
+    {t:'kumpanya', m:'empresa', e:'Saang kumpanya ka?', tags:['business']},
+    {t:'empleyado', m:'empleado', e:'Empleyado ako.', tags:['business']},
+    {t:'kita', m:'ingreso', e:'Tumaas ang kita.', tags:['business']},
+    {t:'pulong', m:'reunión', e:'May pulong bukas.', tags:['business']},
+    {t:'kontrata', m:'contrato', e:'Pirmahan ang kontrata.', tags:['business']},
+    {t:'ulats', m:'informe', e:'Ihanda ang ulat.', tags:['business']},
+    {t:'tantiya', m:'presupuesto', e:'Magbigay ng tantiya.', tags:['business']},
+    {t:'suweldo', m:'salario', e:'Kailan ang suweldo?', tags:['business']},
+    {t:'deadline', m:'plazo', e:'Nasaan na ang deadline?', tags:['business']},
+    {t:'kliyente', m:'cliente', e:'Ka-meeting ang kliyente.', tags:['business']},
+    {t:'proposal', m:'propuesta', e:'Isumite ang proposal.', tags:['business']},
+    {t:'aproba', m:'aprobar', e:'Na-aprubahan na.', tags:['business']}
+  ]
+};
+
+$('#loadPackBtn').onclick = async ()=>{
+  const key = $('#packSelect').value;
+  const items = PACKS[key]||[];
+  if(!items.length){ toast('Paquete vacío', true); return; }
+  const { data:{session} } = await client.auth.getSession(); if(!session){ toast('Iniciá sesión', true); return; }
+
+  const rows = items.map(x=>({
+    user_id: session.user.id, term:x.t, meaning:x.m, example:x.e,
+    tags:x.tags, from_lang:'Tagalog', to_lang:'Spanish',
+    ease:2.5, repetitions:0, interval_days:0, next_review_at:new Date().toISOString()
+  }));
+
+  const { error } = await client.from('words').insert(rows);
+  if(error){ console.error(error); toast('Error al cargar: '+error.message, true); return; }
+  toast('Paquete cargado ✅'); await loadWords();
+};
+
+/* ====== REPASO (lanza modal en otra pantalla, aquí solo prepara lote) ====== */
+let reviewQueue=[];
+$('#reviewBtn').onclick = async ()=>{
+  const { data:{session} } = await client.auth.getSession(); if(!session) return;
+  const mode = $('#reviewFilter').value;
+  const limit = +$('#reviewBatch').value;
+
+  let q = client.from('words').select('*').eq('user_id', session.user.id);
+  if(mode==='due'){ q = q.lte('next_review_at', new Date().toISOString()); }
+  const { data, error } = await q.order('next_review_at', {ascending:true}).limit(500);
+  if(error){ toast(error.message, true); return; }
+
+  let rows = data||[];
+  if(mode==='difficult'){ rows = [...rows].sort((a,b)=>(a.ease||2.5)-(b.ease||2.5)); }
+  reviewQueue = rows.slice(0, limit);
+
+  if(!reviewQueue.length){ toast('Nada para repasar'); return; }
+  // Guardamos lote en sessionStorage y vamos a la vista de práctica (flashcards)
+  sessionStorage.setItem('reviewQueue', JSON.stringify(reviewQueue));
+  location.href='./review.html'; // <- usa tu página de tarjetas (si la tenés)
+  // si aún no la creaste, podés mantener este aviso:
+  // toast('Próximamente: vista de tarjetas');
+};
+
+/* ====== Tema (simple toggle) ====== */
+let dark=false; $('#themeBtn').onclick=()=>{
+  dark=!dark;
+  document.documentElement.style.setProperty('--bg', dark?'#0b1220':'#f7faf9');
+  document.documentElement.style.setProperty('--panel', dark?'#0f172a':'#ffffff');
+  document.documentElement.style.setProperty('--ink', dark?'#e2e8f0':'#0f172a');
+  document.documentElement.style.setProperty('--bd', dark?'#1f2937':'#e5e7eb');
+  document.body.style.background= getComputedStyle(document.documentElement).getPropertyValue('--bg');
+};
+</script>
+</body>
+</html>
