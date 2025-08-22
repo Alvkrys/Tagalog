@@ -1,65 +1,279 @@
 <!doctype html>
-<html lang="es" data-theme="system">
+<html lang="es" data-theme="light">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Tagalog – Aprende idiomas</title>
-  <link rel="manifest" href="manifest.webmanifest">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TalaLog — Tagalog</title>
+
   <style>
+    /* ===== Paleta clara/oscura ===== */
     :root{
-      --bg:#f7faf9;--ink:#0f172a;--panel:#ffffff;--bd:#e5e7eb;--brand:#34d399;
+      --bg:#f7faf9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --bd:#e5e7eb;
+      --brand:#34d399; --brand-2:#a78bfa; --progress-bg:#e8eef1;
+      --ok:#22c55e20; --warn:#f59e0b20; --due:#ef444420;
+      --red:#ef4444; --amber:#f59e0b; --green:#22c55e;
     }
     [data-theme="dark"]{
-      --bg:#0b1220;--ink:#e5e7eb;--panel:#0f172a;--bd:#233044;--brand:#34d399;
+      --bg:#0b1220; --panel:#0f172a; --ink:#e5e7eb; --muted:#94a3b8; --bd:#1f2a44;
+      --brand:#22d3a3; --brand-2:#8b5cf6; --progress-bg:#10192e;
+      --ok:#22c55e33; --warn:#f59e0b33; --due:#ef444433;
     }
-    html,body{height:100%} body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,Segoe UI,Inter,Arial,sans-serif}
-    .wrap{min-height:100%;display:grid;place-items:center}
-    .hero{display:flex;flex-direction:column;gap:28px;align-items:center;text-align:center}
-    h1{margin:0;font-weight:800;letter-spacing:.2px}
-    .flags{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
-    .flag{display:grid;place-items:center;width:140px;height:140px;border-radius:24px;background:var(--panel);border:1px solid var(--bd);box-shadow:0 10px 28px rgba(16,24,40,.08);cursor:pointer;transition:.2s}
-    .flag:hover{transform:translateY(-4px);box-shadow:0 18px 42px rgba(16,24,40,.12)}
-    .flag span{font-size:64px}
-    .label{margin-top:6px;font-weight:600}
-    .credits{position:fixed;bottom:10px;width:100%;text-align:center;color:#d4af37;font-size:12px;opacity:.9}
-    .theme{position:fixed;right:14px;top:14px;border:1px solid var(--bd);border-radius:999px;padding:6px 10px;background:var(--panel);cursor:pointer}
+
+    *{box-sizing:border-box}
+    body{margin:0;font:16px/1.45 system-ui,Inter,Segoe UI,Roboto,Arial;color:var(--ink);background:var(--bg)}
+    .wrap{max-width:980px;margin:24px auto;padding:0 16px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    h1{display:flex;gap:8px;align-items:center;margin:0}
+    .flag{font-size:28px;vertical-align:-2px}
+    .chip{padding:6px 10px;border:1px solid var(--bd);border-radius:999px;color:var(--muted);cursor:pointer;background:transparent}
+    .muted{color:var(--muted)}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    @media(max-width:720px){.grid{grid-template-columns:1fr}}
+
+    input,button,textarea,select{padding:10px;border:1px solid var(--bd);border-radius:10px;background:#fff}
+    [data-theme="dark"] input,[data-theme="dark"] textarea,[data-theme="dark"] select{background:#0b1220;color:var(--ink)}
+    button{cursor:pointer}
+    .btn{padding:10px 14px;border:1px solid var(--bd);border-radius:10px;background:#fff}
+    .btn.primary{background:var(--brand);border-color:transparent;color:#fff}
+
+    .card{
+      background: radial-gradient(120% 120% at 100% 0%, rgba(167,139,250,.10), rgba(255,255,255,.94) 60%), var(--panel);
+      border:1px solid var(--bd);border-radius:16px;padding:14px 16px;margin:10px 0;transition:.18s ease
+    }
+    .card:hover{box-shadow:0 12px 30px rgba(16,24,40,.12)}
+    .list-item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #eef2f7}
+    .progress{height:6px;background:var(--progress-bg);border-radius:999px;overflow:hidden;margin-top:6px}
+    .progress > i{display:block;height:100%;width:var(--pct,0%);background:linear-gradient(90deg,var(--brand),var(--brand-2));transition:width .35s ease;border-radius:inherit}
+    .chip-tag{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;margin-right:6px}
+
+    .is-ok{box-shadow:0 0 0 6px var(--ok) inset}
+    .is-warn{box-shadow:0 0 0 6px var(--warn) inset}
+    .is-due{box-shadow:0 0 0 6px var(--due) inset}
+
+    .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .stats{display:flex;gap:8px;align-items:center}
+    .badge{padding:4px 10px;border:1px solid var(--bd);border-radius:999px;background:transparent}
+
+    /* Flashcards */
+    #reviewCard{position:sticky;bottom:0}
+    .fc-title{font-weight:600;margin-bottom:4px}
+    .fc-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .btn-red{background:var(--red);color:#fff;border-color:transparent}
+    .btn-amber{background:var(--amber);color:#fff;border-color:transparent}
+    .btn-green{background:var(--green);color:#fff;border-color:transparent}
+
+    /* Toast */
+    #toast{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;z-index:9999}
+    .toast{background:var(--panel);border:1px solid var(--bd);border-left:4px solid var(--brand);padding:10px 12px;border-radius:10px;box-shadow:0 10px 24px rgba(16,24,40,.18);min-width:220px}
+    .credits{margin:24px 0 10px;text-align:center;color:#d4af37;font-size:12px;opacity:.9}
   </style>
-  <script>
-    // PWA
-    if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}); }
-    // Theme cycle
-    const THEME_KEY='talalog_theme';
-    function applyTheme(v){ document.documentElement.setAttribute('data-theme', v); localStorage.setItem(THEME_KEY,v);}
-    function cycleTheme(){
-      const cur=localStorage.getItem(THEME_KEY)||'system';
-      const nxt = cur==='system'?'light':cur==='light'?'dark':'system';
-      applyTheme(nxt);
-      document.querySelector('#themeTxt').textContent = nxt;
-    }
-    window.addEventListener('DOMContentLoaded',()=>{
-      applyTheme(localStorage.getItem(THEME_KEY)||'system');
-      document.querySelector('#themeTxt').textContent = localStorage.getItem(THEME_KEY)||'system';
-    });
-  </script>
 </head>
+
 <body>
-  <button class="theme" onclick="cycleTheme()">Tema: <b id="themeTxt">system</b></button>
-  <div class="wrap">
-    <section class="hero">
-      <h1>Elige idioma</h1>
-      <div class="flags">
-        <a class="flag" href="./tagalog.html" aria-label="Tagalog (Filipinas)">
-          <span>🇵🇭</span>
-        </a>
-        <a class="flag" href="./coming-en.html" aria-label="English (EE. UU.)">
-          <span>🇺🇸</span>
-        </a>
-        <a class="flag" href="./coming-zh.html" aria-label="中文（中国）">
-          <span>🇨🇳</span>
-        </a>
+<div class="wrap">
+  <div id="toast" aria-live="polite"></div>
+
+  <header>
+    <h1><span class="flag">🇵🇭</span> Tagalog</h1>
+    <div class="row">
+      <button id="themeBtn" class="chip">Tema</button>
+      <div id="userBox" class="row hidden">
+        <span id="userEmail" class="muted"></span>
+        <button id="signOutBtn" class="btn">Salir</button>
       </div>
-    </section>
-  </div>
-  <footer class="credits">Gawa ni Harry</footer>
-</body>
-</html>
+    </div>
+  </header>
+
+  <!-- ========= Login OTP ========= -->
+  <section id="authSection" class="card">
+    <h2>Entrá con tu correo (OTP)</h2>
+    <div class="row">
+      <input id="email" placeholder="tu@correo.com" style="min-width:260px">
+      <button id="sendOtpBtn" class="btn">Enviar código</button>
+    </div>
+    <div class="row">
+      <input id="otp" placeholder="Código de 6 dígitos" style="min-width:260px">
+      <button id="verifyBtn" class="btn">Verificar</button>
+    </div>
+    <p class="muted">Revisá tu inbox/spam. El código caduca pronto.</p>
+  </section>
+
+  <!-- ========= App ========= -->
+  <section id="appSection" class="hidden">
+
+    <!-- Toolbar superior -->
+    <div class="toolbar card">
+      <div class="stats">
+        <span id="todayStat" class="badge">Hoy 0 / 20</span>
+        <span id="pendingStat" class="badge">Pendientes 0</span>
+        <span id="streakStat" class="badge">Racha 🔥 0</span>
+      </div>
+      <div class="row" style="margin-left:auto">
+        <button id="addExamplesBtn" class="btn">Añadir ejemplos</button>
+        <button id="resetStreakBtn" class="btn">Reiniciar racha</button>
+      </div>
+    </div>
+
+    <!-- Agregar palabra -->
+    <div class="card">
+      <h3>Agregar palabra</h3>
+      <div class="grid">
+        <input id="term"    placeholder="Palabra en Tagalog *">
+        <input id="meaning" placeholder="Significado (ES/EN)">
+        <input id="example" placeholder="Ejemplo de uso">
+        <input id="tags"    placeholder="Etiquetas: saludo,verbo (coma separadas)">
+      </div>
+      <div class="grid">
+        <input id="notes" placeholder="Notas">
+        <div class="row">
+          <select id="fromLang"><option>Tagalog</option><option>English</option><option>Spanish</option></select>
+          <select id="toLang"><option>Spanish</option><option>English</option></select>
+          <button id="addBtn" class="btn primary">Agregar</button>
+          <button id="exportBtn" class="btn">Exportar CSV</button>
+        </div>
+      </div>
+      <div class="row">
+        <input id="quick" placeholder="Entrada rápida: kape | café | saludo,comida | ejemplo opcional…" style="flex:1">
+        <button id="quickParseBtn" class="btn">Parsear</button>
+      </div>
+      <div class="row">
+        <input id="search" placeholder="Buscar..." style="flex:1">
+        <select id="sort">
+          <option value="created_at.desc">Recientes primero</option>
+          <option value="term.asc">A–Z</option>
+          <option value="term.desc">Z–A</option>
+          <option value="updated_at.desc">Editadas reciente</option>
+        </select>
+        <span class="muted" id="countLabel"></span>
+      </div>
+    </div>
+
+    <!-- Lista -->
+    <div id="list" class="card"></div>
+
+    <!-- Controles de repaso -->
+    <div class="card">
+      <div class="row" style="align-items:center;justify-content:space-between">
+        <div class="row" style="gap:12px">
+          <button id="reviewBtn" class="btn primary">Repasar hoy</button>
+          <label class="row" style="gap:6px;align-items:center">
+            <span class="muted">Cantidad</span>
+            <select id="reviewCountSelect">
+              <option>5</option><option>10</option><option>15</option>
+            </select>
+          </label>
+          <label class="row" style="gap:6px;align-items:center">
+            <input type="checkbox" id="hardOnly">
+            <span class="muted">Solo difíciles</span>
+          </label>
+        </div>
+        <span id="dueInfo" class="muted">0 para repasar</span>
+      </div>
+    </div>
+
+    <!-- Flashcards -->
+    <div id="reviewCard" class="card hidden">
+      <div class="muted">Tarjeta <span id="revPos">0</span> / <span id="revTotal">0</span></div>
+      <h2 id="revTerm" style="margin:8px 0 4px 0"></h2>
+      <div id="revHint" class="muted"></div>
+      <button id="showAnsBtn" class="btn" style="margin-top:8px">Mostrar significado</button>
+      <div id="revAnswer" class="hidden" style="margin-top:8px">
+        <strong id="revMeaning"></strong>
+        <div id="revExample" class="muted" style="margin-top:4px"></div>
+      </div>
+      <div class="fc-actions">
+        <button class="btn btn-red"   data-q="0" title="Muy difícil">Difícil</button>
+        <button class="btn btn-amber" data-q="3" title="Medianamente">Regular</button>
+        <button class="btn btn-green" data-q="5" title="Fácil">Fácil</button>
+      </div>
+    </div>
+
+    <footer class="credits">Gawa ni Harry</footer>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =================== CONFIG SUPABASE =================== */
+const SUPABASE_URL = "https://wszrttutzsmzayzpbnjq.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzenJ0dHV0enNtemF5enBibmpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODI4MzAsImV4cCI6MjA3MTE1ODgzMH0.2Xkc4vCPbJ1W9Sbp78Ae_qvKZHC_GP8Dtq4Ub6ZZW1M";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* =================== Helpers =================== */
+const $ = s => document.querySelector(s);
+const authSection = $('#authSection');
+const appSection  = $('#appSection');
+const listEl      = $('#list');
+const countEl     = $('#countLabel');
+const userEmailEl = $('#userEmail');
+const toastBox    = $('#toast');
+
+function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; toastBox.appendChild(t); setTimeout(()=>t.remove(),3500); }
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
+function fmtDate(d){ return new Date(d).toLocaleDateString() }
+
+/* =================== Tema =================== */
+const root=document.documentElement; const savedTheme=localStorage.getItem('theme');
+if(savedTheme) root.setAttribute('data-theme',savedTheme);
+$('#themeBtn').onclick=()=>{ const t=root.getAttribute('data-theme')==='dark'?'light':'dark'; root.setAttribute('data-theme',t); localStorage.setItem('theme',t); };
+
+/* =================== Auth =================== */
+$('#sendOtpBtn').onclick = async () => {
+  const email = $('#email').value.trim();
+  if (!email) return toast('Poné tu correo');
+  const { error } = await client.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: location.href } // vuelve a esta página
+  });
+  if (error) return toast(error.message);
+  toast('Código enviado. Revisá tu email.');
+};
+$('#verifyBtn').onclick = async () => {
+  const email = $('#email').value.trim();
+  const token = $('#otp').value.trim();
+  if (!email || !token) return toast('Correo y código');
+  const { error } = await client.auth.verifyOtp({ email, token, type: 'email' });
+  if (error) return toast(error.message);
+  await onAuthed();
+};
+$('#signOutBtn').onclick = async () => { await client.auth.signOut(); location.reload(); };
+
+async function onAuthed(){
+  const { data:{ user } } = await client.auth.getUser();
+  userEmailEl.textContent = user?.email || '';
+  authSection.classList.add('hidden');
+  $('#userBox').classList.remove('hidden');
+  appSection.classList.remove('hidden');
+  await refreshStats();
+  await loadWords();
+}
+
+/* =================== Agregar palabra =================== */
+$('#addBtn').onclick = addWord;
+$('#quickParseBtn').onclick = () => {
+  const s=$('#quick').value.trim();
+  if(!s) return;
+  // formato: term | meaning | tag1,tag2 | example
+  const [t,m,tags,ex] = s.split('|').map(x=>x?.trim());
+  if(t) $('#term').value=t;
+  if(m) $('#meaning').value=m;
+  if(tags) $('#tags').value=tags;
+  if(ex) $('#example').value=ex;
+};
+
+async function addWord(){
+  const term = $('#term').value.trim();
+  const meaning = $('#meaning').value.trim();
+  if(!term || !meaning) return toast('Palabra y significado obligatorios');
+
+  const example = $('#example').value.trim();
+  const notes   = $('#notes').value.trim();
+  const tagsRaw = $('#tags').value.trim();
+  const tags = tagsRaw ? tagsRaw.split(',').map(s=>s.trim()).filter(Boolean) : null;
+
+  const { data:{ session } } = await client.auth.getSession(); if(!session) return toast('Iniciá sesión');
+
+  const row = {
+    user_id: session.user.id, term, meaning,
+    example: example||null, notes: notes||null, ta
